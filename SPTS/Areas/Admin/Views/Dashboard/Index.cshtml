@@ -1,0 +1,97 @@
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "Bảng điều khiển";
+    var visit = SPTS.Services.VisitTrackingFilter.Current(Context);
+}
+<h2 class="mb-3">@ViewData["Title"]</h2>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header fw-semibold">Thông tin truy cập <span class="badge bg-secondary ms-1">Persistent Cookie · 30 ngày</span></div>
+            <div class="card-body">
+                <p class="mb-1">Số lần truy cập: <strong>@(visit?.Count ?? 0)</strong></p>
+                <p class="mb-1">Lần truy cập trước: <strong>@(Context.Session.GetString("PreviousVisit") ?? "—")</strong></p>
+                <p class="mb-1">Chức năng thường dùng:</p>
+                <ul class="mb-0">
+                    @foreach (var (name, count) in visit?.TopFeatures(3) ?? [])
+                    {
+                        <li>@name <span class="text-muted">(@count lần)</span></li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header fw-semibold">Phiên làm việc <span class="badge bg-secondary ms-1">Session · 30 phút</span></div>
+            <div class="card-body">
+                <p class="mb-1">Người dùng: <strong>@(Context.Session.GetString("FullName") ?? User.FindFirst("FullName")?.Value)</strong></p>
+                <p class="mb-1">Vai trò: <strong>@(Context.Session.GetString("Roles") ?? "—")</strong></p>
+                <p class="mb-1">Đăng nhập lúc: <strong>@(Context.Session.GetString("LoginAt") ?? "—")</strong></p>
+                <p class="mb-0 text-muted small">Session ID: @Context.Session.Id[..8]… · Xác thực bởi ASP.NET Core Identity</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    @foreach (var (label, value, color) in new[]
+    {
+        ("Tổng tài khoản", Model.TotalUsers, "primary"),
+        ("Đang hoạt động", Model.ActiveUsers, "success"),
+        ("Đã khóa / tạm khóa", Model.LockedUsers, "secondary"),
+        ("Đăng nhập hôm nay", Model.LoginsToday, "info"),
+        ("Đăng nhập sai hôm nay", Model.FailedLoginsToday, "danger")
+    })
+    {
+        <div class="col-6 col-md">
+            <div class="card border-@color h-100">
+                <div class="card-body">
+                    <div class="text-muted small">@label</div>
+                    <div class="fs-2 fw-bold text-@color">@value</div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<div class="row g-3">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header fw-semibold">Tài khoản theo vai trò</div>
+            <ul class="list-group list-group-flush">
+                @foreach (var (role, count) in Model.UsersByRole)
+                {
+                    <li class="list-group-item d-flex justify-content-between">@role <span class="badge bg-primary rounded-pill">@count</span></li>
+                }
+            </ul>
+            <div class="card-body">
+                <a asp-controller="Users" asp-action="Index" class="btn btn-sm btn-outline-primary">Quản lý tài khoản</a>
+                <a asp-controller="Users" asp-action="Create" class="btn btn-sm btn-primary">+ Thêm</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="card h-100">
+            <div class="card-header fw-semibold d-flex justify-content-between">
+                Hoạt động gần đây
+                <a asp-controller="AuditLogs" asp-action="Index" class="small">Xem tất cả</a>
+            </div>
+            <table class="table table-sm mb-0 align-middle">
+                <tbody>
+                    @foreach (var l in Model.RecentLogs)
+                    {
+                        <tr>
+                            <td class="text-muted small text-nowrap">@l.CreatedAt.ToString("dd/MM HH:mm")</td>
+                            <td>@(l.Username ?? "(hệ thống)")</td>
+                            <td><span class="badge bg-info text-dark">@l.Action</span></td>
+                            <td class="small">@l.TableName @l.RecordId</td>
+                            <td><a asp-controller="AuditLogs" asp-action="Detail" asp-route-id="@l.LogId" class="small">Chi tiết</a></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

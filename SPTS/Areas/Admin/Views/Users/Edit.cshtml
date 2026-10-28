@@ -1,0 +1,9 @@
+@model UserEditModel
+@{ ViewData["Title"] = "Sửa tài khoản"; }
+<h2>@ViewData["Title"]: @Model.Username</h2>
+<form asp-action="Edit" asp-route-id="@Model.UserId" method="post" class="col-md-6">
+    <partial name="_Form" model="Model" />
+    <button class="btn btn-primary">Lưu</button>
+    <a asp-action="Index" class="btn btn-link">Quay lại</a>
+</form>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

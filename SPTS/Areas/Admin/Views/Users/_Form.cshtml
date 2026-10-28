@@ -1,0 +1,39 @@
+@model UserEditModel
+@{
+    var roles = (List<Role>)ViewBag.Roles;
+}
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<input type="hidden" asp-for="UserId" />
+<div class="mb-3">
+    <label asp-for="Username" class="form-label"></label>
+    <input asp-for="Username" class="form-control" />
+    <span asp-validation-for="Username" class="text-danger"></span>
+</div>
+<div class="mb-3">
+    <label asp-for="FullName" class="form-label"></label>
+    <input asp-for="FullName" class="form-control" />
+    <span asp-validation-for="FullName" class="text-danger"></span>
+</div>
+<div class="mb-3">
+    <label asp-for="Email" class="form-label"></label>
+    <input asp-for="Email" class="form-control" />
+    <span asp-validation-for="Email" class="text-danger"></span>
+</div>
+<div class="mb-3">
+    <label asp-for="Password" class="form-label"></label>
+    <input asp-for="Password" class="form-control" autocomplete="new-password"
+           placeholder="@(Model.UserId == null ? "" : "Để trống nếu không đổi mật khẩu")" />
+    <span asp-validation-for="Password" class="text-danger"></span>
+</div>
+<div class="mb-3">
+    <label class="form-label d-block">Vai trò</label>
+    @foreach (var r in roles)
+    {
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" name="SelectedRoleIds" value="@r.RoleId"
+                   id="role_@r.RoleId" checked="@Model.SelectedRoleIds.Contains(r.RoleId)" />
+            <label class="form-check-label" for="role_@r.RoleId">@r.RoleName</label>
+        </div>
+    }
+    <span asp-validation-for="SelectedRoleIds" class="text-danger d-block"></span>
+</div>

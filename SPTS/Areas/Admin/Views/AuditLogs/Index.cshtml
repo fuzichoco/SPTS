@@ -1,0 +1,47 @@
+@model AuditLogFilterViewModel
+@{
+    ViewData["Title"] = "Nhật ký hệ thống";
+    var actions = (List<string>)ViewBag.Actions;
+    var tables = (List<string>)ViewBag.Tables;
+}
+<h2>@ViewData["Title"]</h2>
+@if (TempData["Error"] != null) { <div class="alert alert-warning">@TempData["Error"]</div> }
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-2"><input asp-for="Username" class="form-control" placeholder="Người dùng" /></div>
+    <div class="col-md-2">
+        <select asp-for="Action" asp-items="@(new SelectList(actions))" class="form-select"><option value="">-- Hành động --</option></select>
+    </div>
+    <div class="col-md-2">
+        <select asp-for="TableName" asp-items="@(new SelectList(tables))" class="form-select"><option value="">-- Bảng --</option></select>
+    </div>
+    <div class="col-md-2"><input asp-for="FromDate" class="form-control" title="Từ ngày" /></div>
+    <div class="col-md-2"><input asp-for="ToDate" class="form-control" title="Đến ngày" /></div>
+    <div class="col-md-2"><button class="btn btn-outline-primary w-100">Lọc</button></div>
+</form>
+
+<table class="table table-sm table-striped align-middle">
+    <thead>
+        <tr><th>Thời gian</th><th>Người dùng</th><th>Hành động</th><th>Bảng</th><th>Bản ghi</th><th>IP</th><th></th></tr>
+    </thead>
+    <tbody>
+        @foreach (var l in Model.Items.Items)
+        {
+            <tr>
+                <td>@l.CreatedAt.ToString("dd/MM/yyyy HH:mm:ss")</td>
+                <td>@(l.Username ?? "(hệ thống)")</td>
+                <td><span class="badge bg-info text-dark">@l.Action</span></td>
+                <td>@l.TableName</td>
+                <td>@l.RecordId</td>
+                <td>@l.IpAddress</td>
+                <td><a asp-action="Detail" asp-route-id="@l.LogId" class="btn btn-sm btn-outline-secondary">Chi tiết</a></td>
+            </tr>
+        }
+        @if (Model.Items.Items.Count == 0)
+        {
+            <tr><td colspan="7" class="text-center text-muted">Không có nhật ký trong khoảng thời gian này</td></tr>
+        }
+    </tbody>
+</table>
+
+<partial name="_Pager" model="Model.Items" />

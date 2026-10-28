@@ -1,0 +1,19 @@
+# .NET build
+bin/
+obj/
+*.user
+*.suo
+.vs/
+.vscode/
+*.log
+appsettings.*.local.json
+
+# Báo cáo cá nhân và ảnh chụp (nộp riêng, không đưa lên repo)
+docs/*.docx
+docs/anh/
+docs/anh7/
+docs/Hinh*.png
+
+# File nháp ngoài project
+generate-ui.js
+ui-prototype/

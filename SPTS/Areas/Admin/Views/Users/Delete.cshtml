@@ -1,0 +1,15 @@
+@model User
+@{ ViewData["Title"] = "Khóa tài khoản"; }
+<h2>@ViewData["Title"]</h2>
+<div class="alert alert-warning">
+    Tài khoản sẽ bị <strong>khóa</strong> (không xóa khỏi CSDL) và không thể đăng nhập. Có thể mở khóa lại sau.
+</div>
+<dl class="row">
+    <dt class="col-sm-3">Username</dt><dd class="col-sm-9">@Model.Username</dd>
+    <dt class="col-sm-3">Họ tên</dt><dd class="col-sm-9">@Model.FullName</dd>
+    <dt class="col-sm-3">Vai trò</dt><dd class="col-sm-9">@string.Join(", ", Model.UserRoles.Select(r => r.Role.RoleName))</dd>
+</dl>
+<form asp-action="Delete" asp-route-id="@Model.UserId" method="post">
+    <button class="btn btn-danger">Xác nhận khóa</button>
+    <a asp-action="Index" class="btn btn-link">Hủy</a>
+</form>

@@ -1,0 +1,16 @@
+@model User
+@{ ViewData["Title"] = "Chi tiết tài khoản"; }
+<h2>@ViewData["Title"]</h2>
+<dl class="row">
+    <dt class="col-sm-3">Username</dt><dd class="col-sm-9">@Model.Username</dd>
+    <dt class="col-sm-3">Họ tên</dt><dd class="col-sm-9">@Model.FullName</dd>
+    <dt class="col-sm-3">Email</dt><dd class="col-sm-9">@Model.Email</dd>
+    <dt class="col-sm-3">Vai trò</dt><dd class="col-sm-9">@string.Join(", ", Model.UserRoles.Select(r => r.Role.RoleName))</dd>
+    <dt class="col-sm-3">Trạng thái</dt><dd class="col-sm-9">@(Model.IsActive ? "Hoạt động" : "Đã khóa")</dd>
+    <dt class="col-sm-3">Đăng nhập sai</dt><dd class="col-sm-9">@Model.FailedLoginCount lần @(Model.LockoutEnd > DateTime.Now ? $"(khóa đến {Model.LockoutEnd:HH:mm dd/MM})" : "")</dd>
+    <dt class="col-sm-3">Đăng nhập gần nhất</dt><dd class="col-sm-9">@Model.LastLoginAt?.ToString("dd/MM/yyyy HH:mm")</dd>
+    <dt class="col-sm-3">Ngày tạo</dt><dd class="col-sm-9">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</dd>
+    <dt class="col-sm-3">Cập nhật</dt><dd class="col-sm-9">@Model.UpdatedAt?.ToString("dd/MM/yyyy HH:mm")</dd>
+</dl>
+<a asp-action="Edit" asp-route-id="@Model.UserId" class="btn btn-primary">Sửa</a>
+<a asp-action="Index" class="btn btn-link">Quay lại</a>

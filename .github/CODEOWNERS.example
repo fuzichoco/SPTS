@@ -1,0 +1,8 @@
+# Đổi tên thành CODEOWNERS và thay bằng username GitHub thật của từng thành viên
+SPTS/Areas/Admin/            @fuzichoco
+SPTS/Services/               @fuzichoco
+SPTS/Controllers/Account*    @fuzichoco
+SPTS/Areas/Staff/            @tv2-username
+SPTS/Areas/Student/          @tv3-username
+SPTS/Data/                   @tv4-username @fuzichoco
+SPTS/Models/                 @tv4-username @fuzichoco
