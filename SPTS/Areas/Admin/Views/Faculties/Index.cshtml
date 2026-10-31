@@ -1,0 +1,67 @@
+@model CatalogFilterViewModel
+@{ ViewData["Title"] = "Quản lý khoa"; }
+<h1>Quản lý khoa</h1>
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-success" role="status">@message</div>
+}
+<a asp-action="Create" class="btn btn-primary mb-3">Thêm khoa</a>
+<form asp-action="Index" method="get" class="row g-3 mb-3">
+    <div class="col-md-3">
+        <label asp-for="Keyword" class="form-label">Tìm theo mã hoặc tên</label>
+        <input asp-for="Keyword" class="form-control" />
+    </div>
+    <div class="col-md-2">
+        <label asp-for="SortOrder" class="form-label">Sắp xếp</label>
+        <select asp-for="SortOrder" class="form-select">
+            <option value="code">Mã tăng dần</option><option value="code_desc">Mã giảm dần</option>
+            <option value="name">Tên A–Z</option><option value="name_desc">Tên Z–A</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <label asp-for="PageSize" class="form-label">Số dòng mỗi trang</label>
+        <select asp-for="PageSize" class="form-select">
+            <option value="5">5</option><option value="10">10</option><option value="20">20</option><option value="50">50</option>
+        </select>
+    </div>
+    <div class="col-auto align-self-end">
+        <button type="submit" class="btn btn-success">Tìm kiếm</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Đặt lại</a>
+    </div>
+</form>
+<div class="table-responsive">
+<table class="table table-bordered table-striped align-middle">
+    <thead><tr><th>Mã</th><th>Tên</th><th>Số ngành</th><th>Số cán bộ</th><th>Thao tác</th></tr></thead>
+    <tbody>
+    @if (Model.Result.Items.Count == 0)
+    {
+        <tr><td colspan="5" class="text-center">Không có dữ liệu phù hợp.</td></tr>
+    }
+    @foreach (var row in Model.Result.Items)
+    {
+        <tr>
+            <td>@row.Code</td><td>@row.Name</td><td>@row.MajorCount</td><td>@row.StaffCount</td>
+            <td class="text-nowrap">
+                <a asp-action="Details" asp-route-id="@row.Id" class="btn btn-sm btn-outline-primary">Chi tiết</a>
+                <a asp-action="Edit" asp-route-id="@row.Id" class="btn btn-sm btn-outline-secondary">Sửa</a>
+                <a asp-action="Delete" asp-route-id="@row.Id" class="btn btn-sm btn-outline-danger">Xóa</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+</div>
+<p>Tổng: @Model.Result.TotalItems bản ghi · Trang @Model.Page / @Math.Max(1, Model.Result.TotalPages)</p>
+@if (Model.Result.TotalPages > 1)
+{
+    <nav aria-label="Phân trang danh mục"><ul class="pagination flex-wrap">
+    @foreach (var p in new[] { 1, Model.Page - 2, Model.Page - 1, Model.Page, Model.Page + 1, Model.Page + 2, Model.Result.TotalPages }.Where(p => p >= 1 && p <= Model.Result.TotalPages).Distinct().OrderBy(p => p))
+    {
+        <li class="page-item @(p == Model.Page ? "active" : "")">
+            <a class="page-link" asp-action="Index" asp-route-Page="@p" asp-route-Keyword="@Model.Keyword"
+               asp-route-SortOrder="@Model.SortOrder" asp-route-FacultyId="@Model.FacultyId" asp-route-PageSize="@Model.PageSize"
+               aria-current="@(p == Model.Page ? "page" : null)">@p</a>
+        </li>
+    }
+    </ul></nav>
+}

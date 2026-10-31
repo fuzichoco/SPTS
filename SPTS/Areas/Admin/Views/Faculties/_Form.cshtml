@@ -1,0 +1,12 @@
+@model FacultyEditModel
+<div asp-validation-summary="All" class="text-danger" role="alert"></div>
+<div class="mb-3">
+    <label asp-for="FacultyCode" class="form-label"></label>
+    <input asp-for="FacultyCode" class="form-control" maxlength="10" />
+    <span asp-validation-for="FacultyCode" class="text-danger"></span>
+</div>
+<div class="mb-3">
+    <label asp-for="FacultyName" class="form-label"></label>
+    <input asp-for="FacultyName" class="form-control" maxlength="150" />
+    <span asp-validation-for="FacultyName" class="text-danger"></span>
+</div>

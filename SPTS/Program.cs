@@ -13,6 +13,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(o =>
     o.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<AuditLogService>();
+builder.Services.AddScoped<SPTS.Repositories.CatalogRepository>();
+builder.Services.AddScoped<CatalogService>();
+builder.Services.AddMemoryCache();
 
 // ASP.NET Core Identity trên bảng Users/Roles có sẵn (UserStore tự viết)
 builder.Services.AddIdentityCore<User>(o =>

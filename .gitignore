@@ -17,3 +17,7 @@ docs/Hinh*.png
 # File nháp ngoài project
 generate-ui.js
 ui-prototype/
+# Runtime và công cụ kiểm thử riêng trên máy phát triển
+.local/
+__pycache__/
+*.pyc

@@ -1,0 +1,19 @@
+@model MajorEditModel
+<div asp-validation-summary="All" class="text-danger" role="alert"></div>
+<div class="mb-3">
+    <label asp-for="MajorCode" class="form-label"></label>
+    <input asp-for="MajorCode" class="form-control" maxlength="10" />
+    <span asp-validation-for="MajorCode" class="text-danger"></span>
+</div>
+<div class="mb-3">
+    <label asp-for="MajorName" class="form-label"></label>
+    <input asp-for="MajorName" class="form-control" maxlength="150" />
+    <span asp-validation-for="MajorName" class="text-danger"></span>
+</div>
+<div class="mb-3">
+    <label asp-for="FacultyId" class="form-label"></label>
+    <select asp-for="FacultyId" asp-items="Model.Faculties" class="form-select">
+        <option value="">Chọn khoa</option>
+    </select>
+    <span asp-validation-for="FacultyId" class="text-danger"></span>
+</div>

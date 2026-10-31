@@ -4,7 +4,7 @@ Repository của nhóm: [fuzichoco/SPTS](https://github.com/fuzichoco/SPTS) · n
 
 Bài tập lớn môn **Lập trình Web nâng cao** – Đề tài 8, Khoa CNTT, Trường ĐH Mở Hà Nội. Ứng dụng giúp sinh viên tra cứu tiến độ học tập, điểm số, học phần đã học và còn thiếu; giáo vụ quản lý điểm; quản trị viên quản lý tài khoản và nhật ký hệ thống. Viết bằng ASP.NET Core MVC (.NET 8), Entity Framework Core 8 và SQL Server, theo hướng Controller → Service → DbContext.
 
-Hiện có: lớp dữ liệu đủ 18 bảng (migration + dữ liệu mẫu), đăng nhập bằng ASP.NET Core Identity trên bảng `Users` của nhóm, phân quyền theo vai trò, quản lý tài khoản (CRUD, tìm kiếm, sắp xếp, phân trang, trang AJAX), nhật ký hệ thống, Dashboard quản trị, Persistent Cookie và Session. Trang của giáo vụ (`/Staff/Grades`) và sinh viên (`/Student/Progress`) chưa làm; Area tương ứng là nơi triển khai tiếp. Đọc [thiết kế database](docs/database/README.md) và [hướng dẫn môi trường](docs/setup.md).
+Hiện có: lớp dữ liệu đủ 18 bảng (migration + dữ liệu mẫu), đăng nhập bằng ASP.NET Core Identity trên bảng `Users` của nhóm, phân quyền theo vai trò, quản lý tài khoản (CRUD, tìm kiếm, sắp xếp, phân trang, trang AJAX), nhật ký hệ thống, Dashboard quản trị, Persistent Cookie và Session. Đã bổ sung mã nguồn quản lý Khoa (`/Admin/Faculties`) và Ngành (`/Admin/Majors`), xem [phạm vi và kiểm tra](docs/features/catalog.md). Trang của giáo vụ (`/Staff/Grades`) và sinh viên (`/Student/Progress`) chưa làm; Area tương ứng là nơi triển khai tiếp. Đọc [thiết kế database](docs/database/README.md) và [hướng dẫn môi trường](docs/setup.md).
 
 ## Bắt đầu
 

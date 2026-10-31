@@ -1,0 +1,9 @@
+@model MajorEditModel
+@{ ViewData["Title"] = "Thêm ngành"; }
+<h1>Thêm ngành</h1>
+<form asp-action="Create" asp-route-id="@ViewContext.RouteData.Values["id"]" method="post" class="col-lg-6">
+    <partial name="_Form" model="Model" />
+    <button type="submit" class="btn btn-primary">Lưu</button>
+    <a asp-action="Index" class="btn btn-outline-secondary">Quay lại</a>
+</form>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

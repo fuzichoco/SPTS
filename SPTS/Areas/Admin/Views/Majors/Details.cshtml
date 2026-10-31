@@ -1,0 +1,6 @@
+@model CatalogRowViewModel
+@{ ViewData["Title"] = "Chi tiết ngành"; }
+<h1>Chi tiết ngành</h1>
+<partial name="_Details" model="Model" />
+<a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Sửa</a>
+<a asp-action="Index" class="btn btn-outline-secondary">Quay lại</a>
