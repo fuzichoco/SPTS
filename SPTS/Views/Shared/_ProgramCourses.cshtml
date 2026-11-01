@@ -1,0 +1,31 @@
+@model ProgressViewModel
+@{
+    string Fmt(decimal? v) => v?.ToString("0.0") ?? "—";
+}
+<div class="card">
+    <div class="card-header d-flex flex-wrap gap-3 align-items-center">
+        <span class="section-title me-auto">Lộ trình CTĐT</span>
+        <span class="small"><span class="course-status Passed me-1"></span>Đạt</span>
+        <span class="small"><span class="course-status Failed me-1"></span>Chưa đạt</span>
+        <span class="small"><span class="course-status NotTaken me-1"></span>Chưa học</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead><tr><th>HK</th><th>Học phần</th><th>TC</th><th>Khối</th><th>Loại</th><th class="text-center">Điểm tốt nhất</th><th>Trạng thái</th></tr></thead>
+            <tbody>
+            @foreach (var pc in Model.ProgramCourses)
+            {
+                <tr>
+                    <td><span class="pill">HK @pc.SuggestedSemester</span></td>
+                    <td><span class="code me-1">@pc.CourseCode</span><span class="cell-main">@pc.CourseName</span></td>
+                    <td>@pc.Credits</td>
+                    <td class="small">@pc.KnowledgeBlock</td>
+                    <td>@if (pc.IsRequired) { <span class="pill info">Bắt buộc</span> } else { <span class="pill warn">Tự chọn</span> }</td>
+                    <td class="text-center fw-bold">@Fmt(pc.BestScore) @if (pc.LetterGrade != null) { <span class="grade-letter ms-1 @pc.LetterGrade[..1]">@pc.LetterGrade</span> }</td>
+                    <td><span class="course-status @pc.Status me-1"></span>@(pc.Status switch { CourseStatus.Passed => "Đạt", CourseStatus.Failed => "Chưa đạt", _ => "Chưa học" })</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -5,6 +5,8 @@
     var authed = User.Identity?.IsAuthenticated == true;
     var area = ViewContext.RouteData.Values["area"]?.ToString() ?? "";
     var ctrl = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var act = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+    string ActiveAct(string a, string c, string ac) => Active(a, c) == "active" && string.Equals(ac, act, StringComparison.OrdinalIgnoreCase) ? "active" : "";
     string Active(string a, string c) => string.Equals(a, area, StringComparison.OrdinalIgnoreCase) && string.Equals(c, ctrl, StringComparison.OrdinalIgnoreCase) ? "active" : "";
     var isAdmin = User.IsInRole(Role.Admin);
     var isStaff = User.IsInRole(Role.Staff);
@@ -67,7 +69,12 @@
             }
             @if (isStudent)
             {
-                <div class="nav-label">Học tập</div>
+                <div class="nav-label">Cổng sinh viên</div>
+                <a class="@ActiveAct("Student","Portal","Index")" asp-area="Student" asp-controller="Portal" asp-action="Index"><i class="bi bi-grid"></i>Dịch vụ của bạn</a>
+                <a class="@ActiveAct("Student","Portal","Profile")" asp-area="Student" asp-controller="Portal" asp-action="Profile"><i class="bi bi-person-vcard"></i>Sơ yếu lý lịch</a>
+                <a class="@ActiveAct("Student","Portal","Program")" asp-area="Student" asp-controller="Portal" asp-action="Program"><i class="bi bi-map"></i>Chương trình đào tạo</a>
+                <a class="@ActiveAct("Student","Portal","Warnings")" asp-area="Student" asp-controller="Portal" asp-action="Warnings"><i class="bi bi-exclamation-triangle"></i>Cảnh báo học vụ</a>
+                <a class="@ActiveAct("Student","Portal","Grades")" asp-area="Student" asp-controller="Portal" asp-action="Grades"><i class="bi bi-clipboard-data"></i>Xem điểm học tập</a>
                 <a class="@Active("Student","Progress")" asp-area="Student" asp-controller="Progress" asp-action="Index"><i class="bi bi-graph-up-arrow"></i>Tiến độ học tập</a>
             }
             <div class="nav-label">Tiện ích</div>

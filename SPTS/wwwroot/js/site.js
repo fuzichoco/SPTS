@@ -10,6 +10,30 @@
         if (msg && !confirm(msg)) e.preventDefault();
     });
 
+    // Nút con mắt: hiện/ẩn mật khẩu cho mọi ô type="password"
+    document.querySelectorAll('input[type="password"]').forEach(input => {
+        const wrap = document.createElement('div');
+        wrap.className = 'pw-wrap';
+        input.before(wrap);
+        wrap.append(input);
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'pw-toggle';
+        const render = () => {
+            const shown = input.type === 'text';
+            btn.innerHTML = `<i class="bi bi-eye${shown ? '-slash' : ''}"></i>`;
+            btn.setAttribute('aria-label', shown ? 'Ẩn mật khẩu' : 'Hiện mật khẩu');
+            btn.title = btn.getAttribute('aria-label');
+        };
+        btn.addEventListener('click', () => {
+            input.type = input.type === 'password' ? 'text' : 'password';
+            render();
+            input.focus();
+        });
+        render();
+        wrap.append(btn);
+    });
+
     // Tự ẩn thông báo thành công sau 4 giây
     setTimeout(() => document.querySelectorAll('.flash.alert-success').forEach(a => bootstrap.Alert.getOrCreateInstance(a).close()), 4000);
 })();

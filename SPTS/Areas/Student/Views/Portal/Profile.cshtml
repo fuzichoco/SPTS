@@ -1,0 +1,55 @@
+@model SPTS.Models.Student
+@{
+    ViewData["Title"] = "Sơ yếu lý lịch";
+    var initials = string.Concat(Model.FullName.Split(' ', StringSplitOptions.RemoveEmptyEntries).TakeLast(2).Select(w => w[0]));
+}
+<div class="page-header">
+    <div>
+        <a asp-action="Index" class="back-link"><i class="bi bi-arrow-left"></i>Dịch vụ của bạn</a>
+        <h1 class="page-title">Sơ yếu lý lịch</h1>
+    </div>
+</div>
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card text-center">
+            <div class="card-body p-4">
+                <div class="avatar mx-auto mb-3" style="width:96px;height:96px;font-size:2rem;border-radius:28px">@initials</div>
+                <h4 class="fw-bold mb-1">@Model.FullName</h4>
+                <div class="text-muted mb-3">MSSV <span class="code">@Model.StudentCode</span></div>
+                <span class="pill @(Model.Status == "Đang học" ? "ok" : "warn")">@Model.Status</span>
+            </div>
+            <div class="card-footer small text-muted text-start">
+                <div><i class="bi bi-person me-2"></i>Tài khoản: <strong>@Model.User?.Username</strong></div>
+                <div class="mt-1"><i class="bi bi-clock-history me-2"></i>Đăng nhập gần nhất: @(Model.User?.LastLoginAt?.ToString("HH:mm dd/MM/yyyy") ?? "—")</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header"><i class="bi bi-person-lines-fill me-1"></i>Thông tin cá nhân</div>
+            <div class="card-body">
+                <dl class="row mb-0 profile-dl">
+                    <dt class="col-sm-4">Họ và tên</dt><dd class="col-sm-8">@Model.FullName</dd>
+                    <dt class="col-sm-4">Ngày sinh</dt><dd class="col-sm-8">@(Model.DateOfBirth?.ToString("dd/MM/yyyy") ?? "—")</dd>
+                    <dt class="col-sm-4">Giới tính</dt><dd class="col-sm-8">@(Model.Gender ?? "—")</dd>
+                    <dt class="col-sm-4">Email</dt><dd class="col-sm-8">@(Model.Email ?? "—")</dd>
+                    <dt class="col-sm-4">Điện thoại</dt><dd class="col-sm-8">@(Model.Phone ?? "—")</dd>
+                </dl>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header"><i class="bi bi-mortarboard me-1"></i>Thông tin học tập</div>
+            <div class="card-body">
+                <dl class="row mb-0 profile-dl">
+                    <dt class="col-sm-4">Lớp sinh hoạt</dt><dd class="col-sm-8">@Model.Class.ClassCode</dd>
+                    <dt class="col-sm-4">Chương trình đào tạo</dt><dd class="col-sm-8">@Model.Class.Program.ProgramName <span class="code ms-1">@Model.Class.Program.ProgramCode</span></dd>
+                    <dt class="col-sm-4">Ngành</dt><dd class="col-sm-8">@Model.Class.Program.Major.MajorName</dd>
+                    <dt class="col-sm-4">Khoa</dt><dd class="col-sm-8">@Model.Class.Program.Major.Faculty.FacultyName</dd>
+                    <dt class="col-sm-4">Khóa</dt><dd class="col-sm-8">@Model.Class.Program.CohortYear</dd>
+                    <dt class="col-sm-4">Cố vấn học tập</dt><dd class="col-sm-8">@(Model.Class.Advisor?.FullName ?? "Chưa phân công")</dd>
+                </dl>
+            </div>
+            <div class="card-footer small text-muted"><i class="bi bi-info-circle me-1"></i>Thông tin sai lệch, liên hệ phòng giáo vụ để cập nhật.</div>
+        </div>
+    </div>
+</div>

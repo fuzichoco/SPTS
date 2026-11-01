@@ -83,6 +83,7 @@ namespace SPTS.Services
             ["Reports"] = "Báo cáo thống kê",
             ["Notifications"] = "Thông báo",
             ["Progress"] = "Tiến độ học tập",
+            ["Portal"] = "Cổng sinh viên",
             ["Lookup"] = "Tra cứu học phần"
         };
 

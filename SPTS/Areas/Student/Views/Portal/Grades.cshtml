@@ -1,0 +1,14 @@
+@model ProgressViewModel
+@{ ViewData["Title"] = "Xem điểm học tập"; }
+<div class="page-header">
+    <div>
+        <a asp-action="Index" class="back-link"><i class="bi bi-arrow-left"></i>Dịch vụ của bạn</a>
+        <h1 class="page-title">Xem điểm học tập</h1>
+        <p class="page-sub">Tổng kết = CC × 10% + GK × 30% + CK × 60%. Học lại tính lần có điểm cao nhất.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <span class="pill info fs-6 px-3 py-2">GPA hệ 4: @Model.Gpa4.ToString("0.00")</span>
+        <span class="pill fs-6 px-3 py-2">TB hệ 10: @Model.Gpa10.ToString("0.00")</span>
+    </div>
+</div>
+<partial name="_SemesterResults" model="Model" />

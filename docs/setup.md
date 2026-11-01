@@ -26,7 +26,7 @@ Khi khởi động, `Program.cs` gọi `Database.MigrateAsync()` rồi `SeedData
 | --- | --- | --- | --- |
 | admin | Admin@123 | Admin | /Admin/Dashboard |
 | giaovu | Staff@123 | Staff | /Staff/Grades |
-| sv2310001, sv2310002, sv2310003 | Student@123 | Student | /Student/Progress |
+| sv2310001, sv2310002, sv2310003 | Student@123 | Student | /Student/Portal |
 
 ## Chuỗi kết nối khác
 

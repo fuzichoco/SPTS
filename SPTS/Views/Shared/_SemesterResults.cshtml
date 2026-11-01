@@ -1,0 +1,38 @@
+@model ProgressViewModel
+@{
+    string Fmt(decimal? v) => v?.ToString("0.0") ?? "—";
+}
+@foreach (var s in Model.Semesters.AsEnumerable().Reverse())
+{
+    <div class="card mb-3">
+        <div class="card-header d-flex flex-wrap gap-2 justify-content-between align-items-center">
+            <span class="section-title">@s.SemesterName</span>
+            <span class="d-flex gap-2"><span class="pill">@s.Credits tín chỉ</span><span class="pill info">GPA @s.Gpa4.ToString("0.00")</span><span class="pill">TB @s.Gpa10.ToString("0.00")</span></span>
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead><tr><th>Học phần</th><th>TC</th><th>Lần</th><th class="text-center">CC</th><th class="text-center">GK</th><th class="text-center">CK</th><th class="text-center">Tổng</th><th class="text-center">Chữ</th><th>Kết quả</th></tr></thead>
+                <tbody>
+                @foreach (var g in s.Grades)
+                {
+                    <tr>
+                        <td><span class="code me-1">@g.CourseCode</span><span class="cell-main">@g.CourseName</span></td>
+                        <td>@g.Credits</td>
+                        <td>@g.AttemptNo</td>
+                        <td class="text-center">@Fmt(g.AttendanceScore)</td>
+                        <td class="text-center">@Fmt(g.MidtermScore)</td>
+                        <td class="text-center">@Fmt(g.FinalScore)</td>
+                        <td class="text-center fw-bold">@Fmt(g.TotalScore)</td>
+                        <td class="text-center"><span class="grade-letter @g.LetterGrade?[..1]">@(g.LetterGrade ?? "—")</span></td>
+                        <td>@if (g.TotalScore == null) { <span class="pill">Chưa đủ điểm</span> } else if (g.IsPassed) { <span class="pill ok"><i class="bi bi-check-circle"></i>Đạt</span> } else { <span class="pill bad"><i class="bi bi-x-circle"></i>Chưa đạt</span> }</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+@if (!Model.Semesters.Any())
+{
+    <div class="card"><div class="empty"><i class="bi bi-journal"></i>Chưa có kết quả học tập.</div></div>
+}

@@ -1,0 +1,18 @@
+@model ProgressViewModel
+@{
+    ViewData["Title"] = "Chương trình đào tạo";
+    var done = Model.ProgramCourses.Count(c => c.Status == CourseStatus.Passed);
+}
+<div class="page-header">
+    <div>
+        <a asp-action="Index" class="back-link"><i class="bi bi-arrow-left"></i>Dịch vụ của bạn</a>
+        <h1 class="page-title">Chương trình đào tạo</h1>
+        <p class="page-sub">@Model.ProgramName · yêu cầu @Model.TotalCredits tín chỉ</p>
+    </div>
+</div>
+<div class="row g-3 mb-4">
+    <div class="col-md-4"><div class="card stat"><div class="stat-icon tone-blue"><i class="bi bi-list-check"></i></div><div><div class="stat-label">Học phần đã đạt</div><div class="stat-value">@done<small class="fs-6 text-muted">/@Model.ProgramCourses.Count</small></div></div></div></div>
+    <div class="col-md-4"><div class="card stat"><div class="stat-icon tone-green"><i class="bi bi-award"></i></div><div><div class="stat-label">Tín chỉ tích lũy</div><div class="stat-value">@Model.PassedCredits<small class="fs-6 text-muted">/@Model.TotalCredits</small></div></div></div></div>
+    <div class="col-md-4"><div class="card stat flex-column align-items-stretch justify-content-center"><div class="stat-label mb-2">Tiến độ hoàn thành @Model.Percent%</div><div class="bar"><span style="width:@Model.Percent%"></span></div></div></div>
+</div>
+<partial name="_ProgramCourses" model="Model" />

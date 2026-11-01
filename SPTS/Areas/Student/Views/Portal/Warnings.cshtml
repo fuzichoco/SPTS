@@ -1,0 +1,66 @@
+@model ProgressViewModel
+@{
+    ViewData["Title"] = "Cảnh báo học vụ";
+    var failed = Model.ProgramCourses.Where(c => c.Status == CourseStatus.Failed).ToList();
+    var lowSemesters = Model.Semesters.Where(s => s.Gpa4 < 1.0m && s.Grades.Any(g => g.TotalScore != null)).ToList();
+    var (tone, icon, title, text) = Model.IsWarned
+        ? ("tone-red", "bi-exclamation-octagon", "Đang bị cảnh báo học vụ", "GPA tích lũy dưới 2.0. Cần học lại học phần chưa đạt và gặp cố vấn học tập.")
+        : failed.Any()
+            ? ("tone-amber", "bi-exclamation-triangle", "Cần chú ý", $"Bạn còn {failed.Count} học phần chưa đạt trong CTĐT.")
+            : ("tone-green", "bi-shield-check", "Không có cảnh báo", "Kết quả học tập đang ổn định, tiếp tục phát huy.");
+}
+<div class="page-header">
+    <div>
+        <a asp-action="Index" class="back-link"><i class="bi bi-arrow-left"></i>Dịch vụ của bạn</a>
+        <h1 class="page-title">Cảnh báo học vụ</h1>
+    </div>
+</div>
+<div class="card mb-4">
+    <div class="card-body d-flex flex-wrap gap-3 align-items-center p-4">
+        <div class="stat-icon @tone" style="width:64px;height:64px;font-size:1.8rem"><i class="bi @icon"></i></div>
+        <div class="flex-grow-1">
+            <h4 class="fw-bold mb-1">@title</h4>
+            <p class="text-muted mb-0">@text</p>
+        </div>
+        <div class="text-end"><div class="stat-label">GPA tích lũy</div><div class="stat-value">@Model.Gpa4.ToString("0.00")</div></div>
+    </div>
+</div>
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-journal-x me-1"></i>Học phần chưa đạt (cần học lại)</div>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead><tr><th>Học phần</th><th>TC</th><th class="text-center">Điểm tốt nhất</th><th>Loại</th></tr></thead>
+                    <tbody>
+                    @foreach (var c in failed)
+                    {
+                        <tr>
+                            <td><span class="code me-1">@c.CourseCode</span><span class="cell-main">@c.CourseName</span></td>
+                            <td>@c.Credits</td>
+                            <td class="text-center fw-bold text-danger">@c.BestScore?.ToString("0.0")</td>
+                            <td>@if (c.IsRequired) { <span class="pill info">Bắt buộc</span> } else { <span class="pill warn">Tự chọn</span> }</td>
+                        </tr>
+                    }
+                    @if (!failed.Any()) { <tr><td colspan="4" class="empty"><i class="bi bi-emoji-smile"></i>Không có học phần nợ.</td></tr> }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        @if (lowSemesters.Any())
+        {
+            <div class="alert alert-warning mt-3 border-0"><i class="bi bi-exclamation-circle me-1"></i>Học kỳ có GPA dưới 1.0: @string.Join(", ", lowSemesters.Select(s => s.SemesterName)).</div>
+        }
+    </div>
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-info-circle me-1"></i>Quy định cảnh báo</div>
+            <ul class="list-group list-group-flush small">
+                <li class="list-group-item"><strong>Cảnh báo học vụ</strong> khi GPA tích lũy &lt; 2.0 (thang 4).</li>
+                <li class="list-group-item"><strong>Chú ý</strong> khi học kỳ có GPA &lt; 1.0 hoặc còn học phần chưa đạt.</li>
+                <li class="list-group-item"><strong>Học phần chưa đạt</strong>: điểm tổng kết &lt; 4.0, phải đăng ký học lại.</li>
+                <li class="list-group-item"><strong>Học lại</strong>: điểm cao nhất được dùng để tính GPA.</li>
+            </ul>
+        </div>
+    </div>
+</div>

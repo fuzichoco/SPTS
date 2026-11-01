@@ -2,7 +2,7 @@
 @{
     ViewData["Title"] = "Trang chủ";
     var authed = User.Identity?.IsAuthenticated == true;
-    var home = User.IsInRole(Role.Admin) ? "/Admin/Dashboard" : User.IsInRole(Role.Staff) ? "/Staff/Grades" : User.IsInRole(Role.Student) ? "/Student/Progress" : null;
+    var home = User.IsInRole(Role.Admin) ? "/Admin/Dashboard" : User.IsInRole(Role.Staff) ? "/Staff/Grades" : User.IsInRole(Role.Student) ? "/Student/Portal" : null;
 }
 @if (!authed)
 {

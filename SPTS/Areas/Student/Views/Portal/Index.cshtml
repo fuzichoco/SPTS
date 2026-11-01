@@ -1,0 +1,48 @@
+@model ProgressViewModel?
+@{
+    ViewData["Title"] = "Dịch vụ của bạn";
+    int unread = ViewBag.Unread;
+}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Xin chào, @(Model?.FullName ?? User.FindFirst("FullName")?.Value) 👋</h1>
+        <p class="page-sub">@(Model == null ? "Chưa liên kết hồ sơ sinh viên." : $"MSSV {Model.StudentCode} · Lớp {Model.ClassCode} · {Model.ProgramName}")</p>
+    </div>
+</div>
+@if (Model != null)
+{
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-xl-3"><div class="card stat"><div class="stat-icon tone-blue"><i class="bi bi-mortarboard"></i></div><div><div class="stat-label">GPA hệ 4</div><div class="stat-value">@Model.Gpa4.ToString("0.00")</div></div></div></div>
+        <div class="col-6 col-xl-3"><div class="card stat"><div class="stat-icon tone-green"><i class="bi bi-check2-circle"></i></div><div><div class="stat-label">Tín chỉ tích lũy</div><div class="stat-value">@Model.PassedCredits<small class="fs-6 text-muted">/@Model.TotalCredits</small></div></div></div></div>
+        <div class="col-6 col-xl-3"><div class="card stat"><div class="stat-icon tone-violet"><i class="bi bi-pie-chart"></i></div><div><div class="stat-label">Tiến độ CTĐT</div><div class="stat-value">@Model.Percent%</div></div></div></div>
+        <div class="col-6 col-xl-3"><div class="card stat"><div class="stat-icon @(Model.IsWarned ? "tone-red" : "tone-amber")"><i class="bi bi-exclamation-triangle"></i></div><div><div class="stat-label">Học phần chưa đạt</div><div class="stat-value">@Model.FailedCourses</div></div></div></div>
+    </div>
+}
+<h2 class="service-heading">Dịch vụ của bạn</h2>
+<div class="row g-3">
+    @foreach (var (action, ctrl, icon, title, text, badge) in new (string, string, string, string, string, string?)[]
+    {
+        ("Profile", "Portal", "bi-person-vcard", "Sơ yếu lý lịch", "Thông tin cá nhân, lớp, chương trình đào tạo, cố vấn học tập.", null),
+        ("Program", "Portal", "bi-map", "Chương trình đào tạo", "Lộ trình học phần theo học kỳ và trạng thái hoàn thành.", null),
+        ("Grades", "Portal", "bi-clipboard-data", "Xem điểm học tập", "Điểm thành phần, điểm tổng kết, điểm chữ theo từng học kỳ.", null),
+        ("Warnings", "Portal", "bi-exclamation-triangle", "Cảnh báo học vụ", "Tình trạng học vụ, học phần nợ cần học lại.", Model?.IsWarned == true ? "Cảnh báo" : Model?.FailedCourses > 0 ? $"{Model.FailedCourses} HP nợ" : null),
+        ("Index", "Progress", "bi-graph-up-arrow", "Tiến độ học tập", "GPA, tín chỉ tích lũy và biểu đồ kết quả học tập.", null),
+        ("Index", "Lookup", "bi-search", "Tra cứu học phần", "Tìm học phần, xem điều kiện tiên quyết.", null)
+    })
+    {
+        <div class="col-md-6 col-xl-4">
+            <a class="card service-card" asp-controller="@ctrl" asp-action="@action">
+                <i class="bi @icon service-icon"></i>
+                <h5>@title @if (badge != null) { <span class="pill bad ms-1">@badge</span> }</h5>
+                <p>@text</p>
+            </a>
+        </div>
+    }
+    <div class="col-md-6 col-xl-4">
+        <a class="card service-card" asp-area="" asp-controller="Notifications" asp-action="Index">
+            <i class="bi bi-bell service-icon"></i>
+            <h5>Thông báo @if (unread > 0) { <span class="pill bad ms-1">@unread mới</span> }</h5>
+            <p>Cập nhật điểm và thông báo từ phòng giáo vụ.</p>
+        </a>
+    </div>
+</div>

@@ -94,12 +94,12 @@ namespace SPTS.Controllers
         private IActionResult RedirectByRole(ClaimsPrincipal user) =>
             RedirectByRole(user.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList());
 
-        // Admin → /Admin/Dashboard, Staff → /Staff/Grades, Student → /Student/Progress
+        // Admin → /Admin/Dashboard, Staff → /Staff/Grades, Student → /Student/Portal
         private IActionResult RedirectByRole(IList<string> roles)
         {
             if (roles.Contains(Role.Admin)) return Redirect("/Admin/Dashboard");
             if (roles.Contains(Role.Staff)) return Redirect("/Staff/Grades");
-            if (roles.Contains(Role.Student)) return Redirect("/Student/Progress");
+            if (roles.Contains(Role.Student)) return Redirect("/Student/Portal");
             return RedirectToAction("Index", "Home");
         }
     }
