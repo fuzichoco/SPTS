@@ -1,0 +1,46 @@
+@model PagedResult<SPTS.Models.Staff>
+@{ ViewData["Title"] = "Cán bộ"; }
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Cán bộ</h1>
+        <p class="page-sub">Giáo vụ khoa, cố vấn học tập; có thể liên kết tài khoản đăng nhập.</p>
+    </div>
+    <a asp-action="Edit" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Thêm cán bộ</a>
+</div>
+<div class="card">
+    <div class="card-toolbar">
+        <form method="get">
+            <partial name="_SearchBox" model="@("Tìm mã hoặc họ tên")" />
+            <button class="btn btn-light"><i class="bi bi-funnel me-1"></i>Lọc</button>
+        </form>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead><tr><th>Mã CB</th><th>Họ tên</th><th>Chức vụ</th><th>Khoa</th><th>Tài khoản</th><th>Cố vấn lớp</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var x in Model.Items)
+            {
+                <tr>
+                    <td><span class="code">@x.StaffCode</span></td>
+                    <td class="cell-main">@x.FullName</td>
+                    <td>@(x.Position ?? "—")</td>
+                    <td>@x.Faculty.FacultyName</td>
+                    <td>@if (x.User != null) { <span class="pill ok"><i class="bi bi-person-check"></i>@x.User.Username</span> } else { <span class="pill">Chưa liên kết</span> }</td>
+                    <td>@string.Join(", ", x.AdvisedClasses.Select(c => c.ClassCode))</td>
+                    <td class="actions">
+                    <a asp-action="Edit" asp-route-id="@x.StaffId" class="btn-icon" title="Sửa"><i class="bi bi-pencil"></i></a>
+                    <form asp-action="Delete" asp-route-id="@x.StaffId" method="post" class="d-inline" data-confirm="Xóa @x.FullName?">
+                        <button class="btn-icon danger" title="Xóa"><i class="bi bi-trash"></i></button>
+                    </form>
+                </td>
+                </tr>
+            }
+        @if (Model.Items.Count == 0)
+        {
+            <tr><td colspan="7" class="empty"><i class="bi bi-inbox"></i>Không có dữ liệu</td></tr>
+        }
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer"><partial name="_Pager" model="Model" /></div>
+</div>

@@ -5,7 +5,6 @@
     var tables = (List<string>)ViewBag.Tables;
 }
 <h2>@ViewData["Title"]</h2>
-@if (TempData["Error"] != null) { <div class="alert alert-warning">@TempData["Error"]</div> }
 
 <form method="get" class="row g-2 mb-3">
     <div class="col-md-2"><input asp-for="Username" class="form-control" placeholder="Người dùng" /></div>

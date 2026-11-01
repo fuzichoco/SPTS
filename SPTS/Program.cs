@@ -1,3 +1,7 @@
+using System.Globalization;
+using System.Text.Encodings.Web;
+using System.Text.Unicode;
+using Microsoft.Extensions.WebEncoders;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SPTS.Data;
@@ -6,13 +10,27 @@ using SPTS.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Định dạng ngày kiểu Việt Nam nhưng số thập phân dùng dấu chấm (khớp <input type="number">)
+var culture = new CultureInfo("vi-VN") { NumberFormat = CultureInfo.InvariantCulture.NumberFormat };
+CultureInfo.DefaultThreadCurrentCulture = CultureInfo.DefaultThreadCurrentUICulture = culture;
+
 // Add services to the container.
 // Filter toàn cục ghi Persistent Cookie (số lần truy cập, chức năng hay dùng)
-builder.Services.AddControllersWithViews(o => o.Filters.Add<VisitTrackingFilter>());
+builder.Services.AddControllersWithViews(o =>
+{
+    o.Filters.Add<VisitTrackingFilter>();
+    // Navigation property (Faculty, Class...) không bị coi là trường bắt buộc khi bind form
+    o.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
+});
 builder.Services.AddDbContext<ApplicationDbContext>(o =>
     o.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+// Không mã hóa chữ tiếng Việt thành &#x...; trong HTML
+builder.Services.Configure<WebEncoderOptions>(o => o.TextEncoderSettings = new TextEncoderSettings(UnicodeRanges.All));
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<AuditLogService>();
+// TV2: tính điểm, GPA, tiến độ có cache trong bộ nhớ
+builder.Services.AddMemoryCache();
+builder.Services.AddScoped<GradeService>();
 
 // ASP.NET Core Identity trên bảng Users/Roles có sẵn (UserStore tự viết)
 builder.Services.AddIdentityCore<User>(o =>
@@ -64,7 +82,9 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     await db.Database.MigrateAsync();
-    await SeedData.InitializeAsync(db, scope.ServiceProvider.GetRequiredService<IPasswordHasher<User>>());
+    var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher<User>>();
+    await SeedData.InitializeAsync(db, hasher);
+    await SeedData.SeedMoreAsync(db, hasher);
 }
 
 // Configure the HTTP request pipeline.

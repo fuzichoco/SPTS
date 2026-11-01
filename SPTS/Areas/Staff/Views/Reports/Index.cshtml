@@ -1,0 +1,72 @@
+@model ClassReportViewModel
+@{
+    ViewData["Title"] = "Báo cáo thống kê";
+    var warned = Model.Students.Count(s => s.IsWarned);
+    var totalGrades = Model.Courses.Sum(c => c.Total);
+    var passRate = totalGrades == 0 ? 0 : Model.Courses.Sum(c => c.Passed) * 100 / totalGrades;
+}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Báo cáo thống kê</h1>
+        <p class="page-sub">Kết quả học tập theo lớp sinh hoạt.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <form method="get"><select name="classId" asp-items="ViewBag.Classes" class="form-select" onchange="this.form.submit()"></select></form>
+        @if (Model.ClassId != null) { <a asp-action="ExportCsv" asp-route-classId="@Model.ClassId" class="btn btn-light"><i class="bi bi-filetype-csv me-1"></i>Xuất CSV</a> }
+    </div>
+</div>
+<div class="row g-3 mb-4">
+    <div class="col-6 col-xl-3"><div class="card stat"><div class="stat-icon tone-blue"><i class="bi bi-people"></i></div><div><div class="stat-label">Sĩ số lớp @Model.ClassCode</div><div class="stat-value">@Model.Students.Count</div></div></div></div>
+    <div class="col-6 col-xl-3"><div class="card stat"><div class="stat-icon tone-violet"><i class="bi bi-mortarboard"></i></div><div><div class="stat-label">GPA trung bình</div><div class="stat-value">@Model.AverageGpa.ToString("0.00")</div></div></div></div>
+    <div class="col-6 col-xl-3"><div class="card stat"><div class="stat-icon tone-green"><i class="bi bi-check2-circle"></i></div><div><div class="stat-label">Tỷ lệ đạt học phần</div><div class="stat-value">@passRate%</div></div></div></div>
+    <div class="col-6 col-xl-3"><div class="card stat"><div class="stat-icon tone-red"><i class="bi bi-exclamation-octagon"></i></div><div><div class="stat-label">Cảnh báo học vụ</div><div class="stat-value">@warned</div></div></div></div>
+</div>
+<div class="row g-4 mb-4">
+    <div class="col-lg-5"><div class="card h-100"><div class="card-header">Phân bố xếp loại</div><div class="card-body"><div class="chart-wrap"><canvas id="rankChart"></canvas></div></div></div></div>
+    <div class="col-lg-7"><div class="card h-100"><div class="card-header">Tỷ lệ đạt & điểm TB theo học phần</div><div class="card-body"><div class="chart-wrap"><canvas id="courseChart"></canvas></div></div></div></div>
+</div>
+<div class="card">
+    <div class="card-header">Danh sách sinh viên</div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead><tr><th>Sinh viên</th><th>Tiến độ</th><th class="text-center">Tín chỉ</th><th class="text-center">GPA 4</th><th class="text-center">TB 10</th><th>Xếp loại</th><th>Ghi chú</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var s in Model.Students.OrderByDescending(s => s.Gpa4))
+            {
+                <tr>
+                    <td><span class="cell-main">@s.FullName</span><div class="cell-sub">@s.StudentCode</div></td>
+                    <td style="min-width:160px"><div class="bar"><span style="width:@s.Percent%"></span></div><div class="cell-sub mt-1">@s.Percent%</div></td>
+                    <td class="text-center">@s.PassedCredits/@s.TotalCredits</td>
+                    <td class="text-center fw-bold">@s.Gpa4.ToString("0.00")</td>
+                    <td class="text-center">@s.Gpa10.ToString("0.00")</td>
+                    <td>@(s.AttemptedCredits > 0 ? s.Rank : "—")</td>
+                    <td>@if (s.IsWarned) { <span class="pill bad">Cảnh báo</span> } else if (s.FailedCourses > 0) { <span class="pill warn">@s.FailedCourses HP nợ</span> }</td>
+                    <td class="actions"><a asp-action="Student" asp-route-id="@s.StudentId" class="btn btn-sm btn-light">Chi tiết <i class="bi bi-chevron-right"></i></a></td>
+                </tr>
+            }
+            @if (!Model.Students.Any()) { <tr><td colspan="8" class="empty"><i class="bi bi-people"></i>Lớp chưa có sinh viên.</td></tr> }
+            </tbody>
+        </table>
+    </div>
+</div>
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>Chart.defaults.maintainAspectRatio = false; Chart.defaults.font.family = "Be Vietnam Pro";</script>
+<script>
+    new Chart(document.getElementById('rankChart'), {
+        type: 'doughnut',
+        data: { labels: @Json.Serialize(Model.RankDistribution.Keys), datasets: [{ data: @Json.Serialize(Model.RankDistribution.Values), backgroundColor: ['#12a150', '#2f5bea', '#22c1c3', '#f0b429', '#dc3545'], borderWidth: 0 }] },
+        options: { cutout: '62%', plugins: { legend: { position: 'bottom' } } }
+    });
+    new Chart(document.getElementById('courseChart'), {
+        data: {
+            labels: @Json.Serialize(Model.Courses.Select(c => c.CourseCode)),
+            datasets: [
+                { type: 'bar', label: 'Tỷ lệ đạt (%)', data: @Json.Serialize(Model.Courses.Select(c => c.Rate)), backgroundColor: 'rgba(47,91,234,.8)', borderRadius: 6, yAxisID: 'y' },
+                { type: 'line', label: 'Điểm TB', data: @Json.Serialize(Model.Courses.Select(c => Math.Round(c.Average, 2))), borderColor: '#f0b429', backgroundColor: '#f0b429', tension: .3, yAxisID: 'y1' }
+            ]
+        },
+        options: { scales: { y: { min: 0, max: 100 }, y1: { min: 0, max: 10, position: 'right', grid: { drawOnChartArea: false } } } }
+    });
+</script>
+}

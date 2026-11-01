@@ -1,0 +1,100 @@
+@model TrainingProgram
+@{
+    ViewData["Title"] = Model.ProgramName;
+    var bySem = Model.ProgramCourses.OrderBy(pc => pc.SuggestedSemester).ThenBy(pc => pc.Course.CourseCode).GroupBy(pc => pc.SuggestedSemester);
+    var credits = Model.ProgramCourses.Sum(pc => pc.Course.Credits);
+    var required = Model.ProgramCourses.Where(pc => pc.IsRequired).Sum(pc => pc.Course.Credits);
+}
+<div class="page-header">
+    <div>
+        <a asp-action="Index" class="back-link"><i class="bi bi-arrow-left"></i>Danh sách CTĐT</a>
+        <h1 class="page-title">@Model.ProgramName</h1>
+        <p class="page-sub"><span class="code">@Model.ProgramCode</span> · Ngành @Model.Major.MajorName · Khóa @Model.CohortYear</p>
+    </div>
+    <a asp-action="Edit" asp-route-id="@Model.ProgramId" class="btn btn-light"><i class="bi bi-pencil me-1"></i>Sửa thông tin</a>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4"><div class="card stat"><div class="stat-icon tone-blue"><i class="bi bi-flag"></i></div><div><div class="stat-label">Tín chỉ yêu cầu</div><div class="stat-value">@Model.TotalCredits</div></div></div></div>
+    <div class="col-md-4"><div class="card stat"><div class="stat-icon tone-green"><i class="bi bi-book"></i></div><div><div class="stat-label">Đã khai báo</div><div class="stat-value">@credits <small class="fs-6 text-muted">TC · @Model.ProgramCourses.Count HP</small></div></div></div></div>
+    <div class="col-md-4"><div class="card stat"><div class="stat-icon tone-violet"><i class="bi bi-check2-square"></i></div><div><div class="stat-label">Bắt buộc / tự chọn</div><div class="stat-value">@required <small class="fs-6 text-muted">/ @(credits - required) TC</small></div></div></div></div>
+</div>
+
+<div class="row g-4">
+    <div class="col-xl-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center"><span class="section-title">Học phần theo học kỳ gợi ý</span></div>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead><tr><th>HK</th><th>Học phần</th><th>TC</th><th>Khối kiến thức</th><th>Loại</th><th></th></tr></thead>
+                    <tbody>
+                    @foreach (var g in bySem)
+                    {
+                        foreach (var pc in g)
+                        {
+                            <tr>
+                                <td><span class="pill">HK @pc.SuggestedSemester</span></td>
+                                <td><span class="code me-1">@pc.Course.CourseCode</span><span class="cell-main">@pc.Course.CourseName</span></td>
+                                <td>@pc.Course.Credits</td>
+                                <td>@pc.KnowledgeBlock</td>
+                                <td>@if (pc.IsRequired) { <span class="pill info">Bắt buộc</span> } else { <span class="pill warn">Tự chọn · @pc.ElectiveGroup?.GroupName</span> }</td>
+                                <td class="actions">
+                                    <form asp-action="RemoveCourse" asp-route-programId="@pc.ProgramId" asp-route-courseId="@pc.CourseId" method="post" data-confirm="Gỡ @pc.Course.CourseCode khỏi CTĐT?">
+                                        <button class="btn-icon danger" title="Gỡ"><i class="bi bi-x-lg"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    @if (!Model.ProgramCourses.Any())
+                    {
+                        <tr><td colspan="6" class="empty"><i class="bi bi-journal-x"></i>CTĐT chưa có học phần</td></tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4">
+        <div class="card mb-4">
+            <div class="card-header"><span class="section-title"><i class="bi bi-plus-circle me-1"></i>Thêm học phần vào CTĐT</span></div>
+            <div class="card-body">
+                <form asp-action="AddCourse" method="post" class="d-grid gap-3">
+                    <input type="hidden" name="ProgramId" value="@Model.ProgramId" />
+                    <div><label class="form-label">Học phần</label><select name="CourseId" asp-items="ViewBag.Courses" class="form-select" required><option value="">-- Chọn --</option></select></div>
+                    <div class="row g-2">
+                        <div class="col-6"><label class="form-label">Học kỳ gợi ý</label><input name="SuggestedSemester" type="number" min="1" max="12" value="1" class="form-control" required /></div>
+                        <div class="col-6"><label class="form-label">Khối kiến thức</label>
+                            <select name="KnowledgeBlock" class="form-select"><option>Đại cương</option><option>Cơ sở ngành</option><option>Chuyên ngành</option><option>Tốt nghiệp</option></select></div>
+                    </div>
+                    <div class="form-check form-switch"><input class="form-check-input" type="checkbox" name="IsRequired" value="true" id="isReq" checked /><label class="form-check-label" for="isReq">Bắt buộc</label></div>
+                    <div><label class="form-label">Nhóm tự chọn (nếu tự chọn)</label>
+                        <select name="ElectiveGroupId" class="form-select"><option value="">-- Không --</option>
+                            @foreach (var eg in Model.ElectiveGroups) { <option value="@eg.ElectiveGroupId">@eg.GroupName (≥ @eg.MinCredits TC)</option> }
+                        </select></div>
+                    <button class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Thêm</button>
+                </form>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header"><span class="section-title"><i class="bi bi-ui-checks-grid me-1"></i>Nhóm tự chọn</span></div>
+            <ul class="list-group list-group-flush">
+                @foreach (var eg in Model.ElectiveGroups)
+                {
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-3">
+                        <span><strong>@eg.GroupName</strong><div class="cell-sub">Tối thiểu @eg.MinCredits tín chỉ</div></span>
+                        <form asp-action="RemoveElectiveGroup" asp-route-id="@eg.ElectiveGroupId" method="post" data-confirm="Xóa nhóm @eg.GroupName?"><button class="btn-icon danger"><i class="bi bi-trash"></i></button></form>
+                    </li>
+                }
+            </ul>
+            <div class="card-body border-top">
+                <form asp-action="AddElectiveGroup" method="post" class="d-flex gap-2">
+                    <input type="hidden" name="ProgramId" value="@Model.ProgramId" />
+                    <input name="GroupName" class="form-control" placeholder="Tên nhóm" required />
+                    <input name="MinCredits" type="number" min="0" class="form-control" style="width:90px" placeholder="TC" required />
+                    <button class="btn btn-light"><i class="bi bi-plus-lg"></i></button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,97 @@
+@model GradeFilterViewModel
+@{
+    ViewData["Title"] = "Quản lý điểm";
+    string Val(decimal? v) => v?.ToString("0.0") ?? "";
+}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Quản lý điểm</h1>
+        <p class="page-sub">Sửa điểm trực tiếp trên bảng rồi bấm <i class="bi bi-floppy"></i> để lưu (AJAX). Tổng = CC×10% + GK×30% + CK×60%.</p>
+    </div>
+    <a asp-action="Edit" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Nhập điểm mới</a>
+</div>
+@Html.AntiForgeryToken()
+<div class="card">
+    <div class="card-toolbar">
+        <form method="get">
+            <select name="SemesterId" asp-items="ViewBag.Semesters" class="form-select"><option value="">Tất cả học kỳ</option></select>
+            <select name="ClassId" asp-items="ViewBag.Classes" class="form-select"><option value="">Tất cả lớp</option></select>
+            <select name="CourseId" asp-items="ViewBag.Courses" class="form-select"><option value="">Tất cả học phần</option></select>
+            <div class="input-icon"><i class="bi bi-search"></i><input name="Keyword" value="@Model.Keyword" class="form-control" placeholder="MSSV hoặc họ tên" /></div>
+            <button class="btn btn-light"><i class="bi bi-funnel me-1"></i>Lọc</button>
+        </form>
+        <span class="small text-muted"><i class="bi bi-cookie me-1"></i>Học kỳ đã chọn được nhớ 30 ngày</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle" id="gradeTable" data-save-url="@Url.Action("SaveAjax")">
+            <thead><tr><th>Sinh viên</th><th>Học phần</th><th>Học kỳ</th><th class="text-center">CC</th><th class="text-center">GK</th><th class="text-center">CK</th><th class="text-center">Tổng</th><th class="text-center">Chữ</th><th>KQ</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var g in Model.Result.Items)
+            {
+                <tr data-id="@g.GradeId">
+                    <td><span class="cell-main">@g.StudentName</span><div class="cell-sub">@g.StudentCode · @g.ClassCode</div></td>
+                    <td><span class="code">@g.CourseCode</span><div class="cell-sub text-truncate" style="max-width:200px">@g.CourseName</div></td>
+                    <td class="small">@g.SemesterName @if (g.AttemptNo > 1) { <span class="pill warn">Lần @g.AttemptNo</span> } @if (g.SemesterLocked) { <i class="bi bi-lock-fill text-muted" title="Học kỳ đã khóa"></i> }</td>
+                    @foreach (var (name, v) in new[] { ("AttendanceScore", g.AttendanceScore), ("MidtermScore", g.MidtermScore), ("FinalScore", g.FinalScore) })
+                    {
+                        <td class="text-center"><input class="form-control score-input mx-auto" type="number" min="0" max="10" step="0.1" name="@name" value="@Val(v)" disabled="@g.SemesterLocked" /></td>
+                    }
+                    <td class="text-center fw-bold" data-total>@(g.TotalScore?.ToString("0.0") ?? "—")</td>
+                    <td class="text-center"><span class="grade-letter @g.LetterGrade?[..1]" data-letter>@(g.LetterGrade ?? "—")</span></td>
+                    <td data-result>@if (g.TotalScore == null) { <span class="pill">—</span> } else if (g.IsPassed) { <span class="pill ok">Đạt</span> } else { <span class="pill bad">Trượt</span> }</td>
+                    <td class="actions">
+                        @if (!g.SemesterLocked)
+                        {
+                            <button class="btn-icon" data-save title="Lưu nhanh"><i class="bi bi-floppy"></i></button>
+                            <a asp-action="Edit" asp-route-id="@g.GradeId" class="btn-icon" title="Sửa"><i class="bi bi-pencil"></i></a>
+                            <form asp-action="Delete" asp-route-id="@g.GradeId" method="post" class="d-inline" data-confirm="Xóa điểm @g.CourseCode của @g.StudentName?">
+                                <button class="btn-icon danger" title="Xóa"><i class="bi bi-trash"></i></button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+            @if (Model.Result.Items.Count == 0)
+            {
+                <tr><td colspan="10" class="empty"><i class="bi bi-clipboard-x"></i>Không có bản ghi điểm phù hợp bộ lọc.</td></tr>
+            }
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer"><partial name="_Pager" model="Model.Result" /></div>
+</div>
+@section Scripts {
+<script>
+    (function () {
+        const table = document.getElementById('gradeTable');
+        table.addEventListener('input', e => e.target.classList?.contains('score-input') && e.target.classList.add('changed'));
+        // fetch POST (FormData + AntiForgery): lưu 3 cột điểm, server trả điểm tổng/chữ đã tính
+        table.addEventListener('click', async e => {
+            const btn = e.target.closest('[data-save]');
+            if (!btn) return;
+            const row = btn.closest('tr');
+            const body = new FormData();
+            body.append('GradeId', row.dataset.id);
+            row.querySelectorAll('.score-input').forEach(i => i.value !== '' && body.append(i.name, i.value));
+            btn.disabled = true;
+            try {
+                const res = await fetch(table.dataset.saveUrl, { method: 'POST', body, headers: { 'RequestVerificationToken': antiForgeryToken() } });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message);
+                row.querySelector('[data-total]').textContent = data.total != null ? data.total.toFixed(1) : '—';
+                const letter = row.querySelector('[data-letter]');
+                letter.textContent = data.letter ?? '—';
+                letter.className = 'grade-letter ' + (data.letter ? data.letter[0] : '');
+                row.querySelector('[data-result]').innerHTML = data.total == null ? '<span class="pill">—</span>'
+                    : data.isPassed ? '<span class="pill ok">Đạt</span>' : '<span class="pill bad">Trượt</span>';
+                row.querySelectorAll('.changed').forEach(i => i.classList.remove('changed'));
+                row.classList.remove('saved'); void row.offsetWidth; row.classList.add('saved');
+            } catch (err) {
+                alert(err.message || 'Lưu thất bại.');
+            } finally {
+                btn.disabled = false;
+            }
+        });
+    })();
+</script>
+}

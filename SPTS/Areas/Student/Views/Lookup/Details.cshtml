@@ -1,0 +1,62 @@
+@model Course
+@{
+    ViewData["Title"] = Model.CourseName;
+    var passed = (List<int>)ViewBag.Passed;
+}
+<div class="page-header">
+    <div>
+        <a asp-action="Index" class="back-link"><i class="bi bi-arrow-left"></i>Tra cứu học phần</a>
+        <h1 class="page-title">@Model.CourseName</h1>
+        <p class="page-sub"><span class="code">@Model.CourseCode</span> · @Model.Credits tín chỉ
+            @if (passed.Contains(Model.CourseId)) { <span class="pill ok ms-2"><i class="bi bi-check-circle"></i>Bạn đã đạt</span> }</p>
+    </div>
+</div>
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card mb-4"><div class="card-header">Mô tả</div><div class="card-body">@(Model.Description ?? "Chưa có mô tả.")</div></div>
+        <div class="card">
+            <div class="card-header">Thuộc chương trình đào tạo</div>
+            <ul class="list-group list-group-flush">
+                @foreach (var pc in Model.ProgramCourses)
+                {
+                    <li class="list-group-item d-flex justify-content-between px-3">
+                        <span>@pc.Program.ProgramName <div class="cell-sub">@pc.KnowledgeBlock</div></span>
+                        <span class="d-flex gap-2 align-items-center"><span class="pill">HK @pc.SuggestedSemester</span>@if (pc.IsRequired) { <span class="pill info">Bắt buộc</span> } else { <span class="pill warn">Tự chọn</span> }</span>
+                    </li>
+                }
+                @if (!Model.ProgramCourses.Any()) { <li class="list-group-item text-muted">Chưa thuộc CTĐT nào.</li> }
+            </ul>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="card mb-4">
+            <div class="card-header"><i class="bi bi-signpost-split me-1"></i>Học phần tiên quyết</div>
+            <ul class="list-group list-group-flush">
+                @foreach (var p in Model.Prerequisites)
+                {
+                    var ok = passed.Contains(p.PrerequisiteId);
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-3">
+                        <a asp-action="Details" asp-route-id="@p.PrerequisiteId"><span class="code me-1">@p.Prerequisite.CourseCode</span>@p.Prerequisite.CourseName</a>
+                        <span class="pill @(ok ? "ok" : "warn")">@(ok ? "Đã đạt" : "Chưa đạt")</span>
+                    </li>
+                }
+                @if (!Model.Prerequisites.Any()) { <li class="list-group-item text-muted">Không yêu cầu tiên quyết.</li> }
+            </ul>
+            @if (Model.Prerequisites.Any())
+            {
+                var all = Model.Prerequisites.All(p => passed.Contains(p.PrerequisiteId));
+                <div class="card-footer small @(all ? "text-success" : "text-warning")"><i class="bi @(all ? "bi-check-circle" : "bi-exclamation-circle") me-1"></i>@(all ? "Đủ điều kiện đăng ký học phần này." : "Chưa đủ điều kiện tiên quyết.")</div>
+            }
+        </div>
+        <div class="card">
+            <div class="card-header"><i class="bi bi-arrow-right-circle me-1"></i>Là tiên quyết của</div>
+            <ul class="list-group list-group-flush">
+                @foreach (var r in Model.RequiredFor)
+                {
+                    <li class="list-group-item px-3"><a asp-action="Details" asp-route-id="@r.CourseId"><span class="code me-1">@r.Course.CourseCode</span>@r.Course.CourseName</a></li>
+                }
+                @if (!Model.RequiredFor.Any()) { <li class="list-group-item text-muted">—</li> }
+            </ul>
+        </div>
+    </div>
+</div>

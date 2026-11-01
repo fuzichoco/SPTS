@@ -1,0 +1,45 @@
+@model PagedResult<Class>
+@{ ViewData["Title"] = "Lớp sinh hoạt"; }
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Lớp sinh hoạt</h1>
+        <p class="page-sub">Lớp gắn với CTĐT và cố vấn học tập.</p>
+    </div>
+    <a asp-action="Edit" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Thêm lớp</a>
+</div>
+<div class="card">
+    <div class="card-toolbar">
+        <form method="get">
+            <partial name="_SearchBox" model="@("Tìm mã lớp hoặc CTĐT")" />
+            <button class="btn btn-light"><i class="bi bi-funnel me-1"></i>Lọc</button>
+        </form>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead><tr><th>Mã lớp</th><th>Chương trình đào tạo</th><th>Cố vấn học tập</th><th>Sĩ số</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var x in Model.Items)
+            {
+                <tr>
+                    <td><span class="code">@x.ClassCode</span></td>
+                    <td class="cell-main">@x.Program.ProgramName</td>
+                    <td>@(x.Advisor?.FullName ?? "—")</td>
+                    <td><a asp-controller="Students" asp-action="Index" asp-route-classId="@x.ClassId" class="pill info">@x.Students.Count sinh viên</a></td>
+                    <td class="actions">
+                    <a asp-area="Staff" asp-controller="Reports" asp-action="Index" asp-route-classId="@x.ClassId" class="btn-icon" title="Báo cáo lớp"><i class="bi bi-bar-chart"></i></a>
+                    <a asp-action="Edit" asp-route-id="@x.ClassId" class="btn-icon" title="Sửa"><i class="bi bi-pencil"></i></a>
+                    <form asp-action="Delete" asp-route-id="@x.ClassId" method="post" class="d-inline" data-confirm="Xóa lớp @x.ClassCode?">
+                        <button class="btn-icon danger" title="Xóa"><i class="bi bi-trash"></i></button>
+                    </form>
+                </td>
+                </tr>
+            }
+        @if (Model.Items.Count == 0)
+        {
+            <tr><td colspan="5" class="empty"><i class="bi bi-inbox"></i>Không có dữ liệu</td></tr>
+        }
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer"><partial name="_Pager" model="Model" /></div>
+</div>

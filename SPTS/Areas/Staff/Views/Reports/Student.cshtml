@@ -1,0 +1,10 @@
+@model ProgressViewModel
+@{ ViewData["Title"] = "Tiến độ " + Model.FullName; }
+<div class="page-header">
+    <div>
+        <a asp-action="Index" class="back-link"><i class="bi bi-arrow-left"></i>Báo cáo lớp</a>
+        <h1 class="page-title">Tiến độ học tập sinh viên</h1>
+    </div>
+    <a asp-controller="Grades" asp-action="Index" asp-route-Keyword="@Model.StudentCode" asp-route-SemesterId="" class="btn btn-light"><i class="bi bi-pencil-square me-1"></i>Xem bảng điểm</a>
+</div>
+<partial name="_Progress" model="Model" />

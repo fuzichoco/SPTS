@@ -1,0 +1,44 @@
+@model PagedResult<Faculty>
+@{ ViewData["Title"] = "Khoa"; }
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Khoa</h1>
+        <p class="page-sub">Danh mục các khoa quản lý ngành và cán bộ.</p>
+    </div>
+    <a asp-action="Edit" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Thêm khoa</a>
+</div>
+<div class="card">
+    <div class="card-toolbar">
+        <form method="get">
+            <partial name="_SearchBox" model="@("Tìm mã hoặc tên khoa")" />
+            <button class="btn btn-light"><i class="bi bi-funnel me-1"></i>Lọc</button>
+        </form>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead><tr><th>Mã khoa</th><th>Tên khoa</th><th>Số ngành</th><th>Số cán bộ</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var x in Model.Items)
+            {
+                <tr>
+                    <td><span class="code">@x.FacultyCode</span></td>
+                    <td class="cell-main">@x.FacultyName</td>
+                    <td><span class="pill info">@x.Majors.Count ngành</span></td>
+                    <td><span class="pill">@x.Staffs.Count cán bộ</span></td>
+                    <td class="actions">
+                    <a asp-action="Edit" asp-route-id="@x.FacultyId" class="btn-icon" title="Sửa"><i class="bi bi-pencil"></i></a>
+                    <form asp-action="Delete" asp-route-id="@x.FacultyId" method="post" class="d-inline" data-confirm="Xóa @x.FacultyName?">
+                        <button class="btn-icon danger" title="Xóa"><i class="bi bi-trash"></i></button>
+                    </form>
+                </td>
+                </tr>
+            }
+        @if (Model.Items.Count == 0)
+        {
+            <tr><td colspan="5" class="empty"><i class="bi bi-inbox"></i>Không có dữ liệu</td></tr>
+        }
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer"><partial name="_Pager" model="Model" /></div>
+</div>

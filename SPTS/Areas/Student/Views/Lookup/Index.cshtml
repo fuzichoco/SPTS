@@ -1,0 +1,73 @@
+@{
+    ViewData["Title"] = "Tra cứu học phần";
+    var recent = (List<SPTS.Areas.Student.Controllers.LookupController.RecentCourse>)ViewBag.Recent;
+}
+<div class="search-hero mb-4">
+    <h1 class="page-title mb-1">Tra cứu học phần</h1>
+    <p class="page-sub mb-3">Gõ mã hoặc tên học phần, kết quả hiện ngay (AJAX · fetch).</p>
+    <div class="input-icon">
+        <i class="bi bi-search"></i>
+        <input id="q" class="form-control" placeholder="vd: IT201 hoặc Cơ sở dữ liệu" autocomplete="off" autofocus />
+    </div>
+    @if (recent.Any())
+    {
+        <div class="mt-3 d-flex flex-wrap gap-2 align-items-center">
+            <small class="text-muted"><i class="bi bi-clock-history me-1"></i>Xem gần đây (Session):</small>
+            @foreach (var r in recent) { <a asp-action="Details" asp-route-id="@r.Id" class="pill info">@r.Code</a> }
+        </div>
+    }
+</div>
+<div class="d-flex justify-content-between align-items-center mb-2">
+    <span id="summary" class="text-muted small"></span>
+    <ul id="pager" class="pagination pagination-sm"></ul>
+</div>
+<div id="results" class="row g-3"></div>
+
+@section Scripts {
+<script>
+    (function () {
+        const searchUrl = '@Url.Action("Search")', detailUrl = '@Url.Action("Details")';
+        const q = document.getElementById('q'), results = document.getElementById('results');
+        let timer, page = 1;
+
+        // Tạo phần tử bằng textContent để không chèn HTML từ dữ liệu
+        const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+
+        async function load() {
+            const res = await fetch(`${searchUrl}?q=${encodeURIComponent(q.value.trim())}&page=${page}`, { headers: { Accept: 'application/json' } });
+            if (!res.ok) { results.replaceChildren(el('div', 'text-danger', 'Không tải được dữ liệu.')); return; }
+            const data = await res.json();
+            document.getElementById('summary').textContent = `Tìm thấy ${data.total} học phần`;
+            results.replaceChildren(...data.items.map(card));
+            if (!data.items.length) results.append(el('div', 'col-12 empty', 'Không có học phần phù hợp.'));
+            pager(data.pages);
+        }
+
+        function card(c) {
+            const col = el('div', 'col-md-6 col-xl-3');
+            const a = el('a', 'card course-card'); a.href = `${detailUrl}/${c.courseId}`;
+            const top = el('div', 'd-flex justify-content-between align-items-center');
+            top.append(el('span', 'code', c.courseCode), el('span', 'pill ' + (c.passed ? 'ok' : ''), c.passed ? '✓ Đã đạt' : `${c.credits} TC`));
+            a.append(top, el('h6', null, c.courseName), el('p', null, c.description || 'Chưa có mô tả.'));
+            const pre = el('div', 'small text-muted');
+            pre.textContent = c.prerequisites.length ? `Tiên quyết: ${c.prerequisites.join(', ')}` : 'Không có tiên quyết';
+            a.append(pre); col.append(a);
+            return col;
+        }
+
+        function pager(pages) {
+            const ul = document.getElementById('pager');
+            ul.replaceChildren();
+            for (let p = 1; p <= pages && pages > 1; p++) {
+                const li = el('li', 'page-item' + (p === page ? ' active' : ''));
+                const b = el('button', 'page-link', p); b.onclick = () => { page = p; load(); };
+                li.append(b); ul.append(li);
+            }
+        }
+
+        // Debounce 300ms: chỉ gọi server khi người dùng ngừng gõ
+        q.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(() => { page = 1; load(); }, 300); });
+        load();
+    })();
+</script>
+}

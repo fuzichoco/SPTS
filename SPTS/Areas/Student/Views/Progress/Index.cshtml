@@ -1,0 +1,10 @@
+@model ProgressViewModel
+@{ ViewData["Title"] = "Tiến độ học tập"; }
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Tiến độ học tập</h1>
+        <p class="page-sub">Cập nhật theo điểm giáo vụ đã nhập · dữ liệu được cache 10 phút.</p>
+    </div>
+    <a asp-controller="Lookup" asp-action="Index" class="btn btn-light"><i class="bi bi-search me-1"></i>Tra cứu học phần</a>
+</div>
+<partial name="_Progress" model="Model" />

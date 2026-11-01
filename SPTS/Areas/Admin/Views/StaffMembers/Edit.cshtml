@@ -1,0 +1,53 @@
+@model SPTS.Models.Staff
+@{
+    var isNew = Model.StaffId == 0;
+    ViewData["Title"] = isNew ? "Thêm cán bộ" : "Sửa cán bộ";
+}
+<div class="page-header">
+    <div>
+        <a asp-action="Index" class="back-link"><i class="bi bi-arrow-left"></i>Danh sách cán bộ</a>
+        <h1 class="page-title">@ViewData["Title"]</h1>
+    </div>
+</div>
+<div class="card" style="max-width:860px">
+    <div class="card-body p-4">
+        <form asp-action="Edit" asp-route-id="@(isNew ? null : Model.StaffId)" method="post">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger small"></div>
+            <input type="hidden" asp-for="StaffId" />
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label asp-for="StaffCode" class="form-label">Mã cán bộ</label>
+                    <input asp-for="StaffCode" class="form-control" placeholder="CB002"/>
+                    <span asp-validation-for="StaffCode" class="text-danger"></span>
+                </div>
+                <div class="col-md-8">
+                    <label asp-for="FullName" class="form-label">Họ tên</label>
+                    <input asp-for="FullName" class="form-control" />
+                    <span asp-validation-for="FullName" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Position" class="form-label">Chức vụ</label>
+                    <input asp-for="Position" class="form-control" placeholder="Cố vấn học tập"/>
+                    <span asp-validation-for="Position" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="FacultyId" class="form-label">Khoa</label>
+                    <select asp-for="FacultyId" asp-items="ViewBag.Faculties" class="form-select" ><option value="">-- Chọn --</option></select>
+                    <span asp-validation-for="FacultyId" class="text-danger"></span>
+                </div>
+                <div class="col-md-12">
+                    <label asp-for="UserId" class="form-label">Tài khoản đăng nhập (vai trò Staff)</label>
+                    <select asp-for="UserId" asp-items="ViewBag.Users" class="form-select" ><option value="">-- Không liên kết --</option></select>
+                    <span asp-validation-for="UserId" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="d-flex gap-2 justify-content-end mt-4 pt-3 border-top">
+                <a asp-action="Index" class="btn btn-light">Hủy</a>
+                <button class="btn btn-primary"><i class="bi bi-check2 me-1"></i>Lưu</button>
+            </div>
+        </form>
+    </div>
+</div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

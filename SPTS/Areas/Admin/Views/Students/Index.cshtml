@@ -1,0 +1,53 @@
+@model PagedResult<SPTS.Models.Student>
+@{ ViewData["Title"] = "Sinh viên"; }
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Sinh viên</h1>
+        <p class="page-sub">Hồ sơ sinh viên, lớp, trạng thái học tập và tài khoản.</p>
+    </div>
+    <a asp-action="Edit" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Thêm sinh viên</a>
+</div>
+<div class="card">
+    <div class="card-toolbar">
+        <form method="get">
+            <partial name="_SearchBox" model="@("Tìm MSSV, họ tên, email")" />
+            <select name="classId" asp-items="ViewBag.Classes" class="form-select"><option value="">Tất cả lớp</option></select>
+            <select name="status" class="form-select">
+                <option value="">Mọi trạng thái</option>
+                @foreach (var st in SPTS.Areas.Admin.Controllers.StudentsController.Statuses) { <option selected="@(st == (string?)ViewBag.Status)">@st</option> }
+            </select>
+            <button class="btn btn-light"><i class="bi bi-funnel me-1"></i>Lọc</button>
+        </form>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead><tr><th>MSSV</th><th>Họ tên</th><th>Lớp</th><th>Ngày sinh</th><th>Liên hệ</th><th>Trạng thái</th><th>Tài khoản</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var x in Model.Items)
+            {
+                <tr>
+                    <td><span class="code">@x.StudentCode</span></td>
+                    <td><span class="cell-main">@x.FullName</span><div class="cell-sub">@x.Gender</div></td>
+                    <td>@x.Class.ClassCode</td>
+                    <td>@x.DateOfBirth?.ToString("dd/MM/yyyy")</td>
+                    <td><div class="small">@x.Email</div><div class="cell-sub">@x.Phone</div></td>
+                    <td><span class="pill @(x.Status == "Đang học" ? "ok" : x.Status == "Thôi học" ? "bad" : x.Status == "Bảo lưu" ? "warn" : "info")">@x.Status</span></td>
+                    <td>@if (x.User != null) { <span class="pill ok"><i class="bi bi-person-check"></i>@x.User.Username</span> } else { <span class="pill">—</span> }</td>
+                    <td class="actions">
+                    <a asp-area="Staff" asp-controller="Reports" asp-action="Student" asp-route-id="@x.StudentId" class="btn-icon" title="Tiến độ học tập"><i class="bi bi-graph-up"></i></a>
+                    <a asp-action="Edit" asp-route-id="@x.StudentId" class="btn-icon" title="Sửa"><i class="bi bi-pencil"></i></a>
+                    <form asp-action="Delete" asp-route-id="@x.StudentId" method="post" class="d-inline" data-confirm="Xóa sinh viên @x.FullName?">
+                        <button class="btn-icon danger" title="Xóa"><i class="bi bi-trash"></i></button>
+                    </form>
+                </td>
+                </tr>
+            }
+        @if (Model.Items.Count == 0)
+        {
+            <tr><td colspan="8" class="empty"><i class="bi bi-inbox"></i>Không có dữ liệu</td></tr>
+        }
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer"><partial name="_Pager" model="Model" /></div>
+</div>

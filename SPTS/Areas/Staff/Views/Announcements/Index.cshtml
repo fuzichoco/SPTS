@@ -1,0 +1,44 @@
+@model NotificationCreateModel
+@{ ViewData["Title"] = "Gửi thông báo"; }
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Gửi thông báo</h1>
+        <p class="page-sub">Thông báo hiện trên chuông của sinh viên ngay sau khi gửi.</p>
+    </div>
+</div>
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body p-4">
+                <form asp-action="Index" method="post" class="d-grid gap-3">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger small"></div>
+                    <div>
+                        <label asp-for="ClassId" class="form-label"></label>
+                        <select asp-for="ClassId" asp-items="ViewBag.Classes" class="form-select"><option value="">Tất cả sinh viên</option></select>
+                    </div>
+                    <div>
+                        <label asp-for="Title" class="form-label"></label>
+                        <input asp-for="Title" class="form-control" placeholder="vd: Lịch đăng ký học phần HK1" />
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+                    <div>
+                        <label asp-for="Content" class="form-label"></label>
+                        <textarea asp-for="Content" rows="6" class="form-control"></textarea>
+                        <span asp-validation-for="Content" class="text-danger"></span>
+                    </div>
+                    <div class="text-end"><button class="btn btn-primary"><i class="bi bi-send me-1"></i>Gửi thông báo</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="stat-icon tone-cyan mb-3"><i class="bi bi-lightbulb"></i></div>
+                <h6 class="fw-bold">Thông báo tự động</h6>
+                <p class="small text-muted mb-0">Mỗi khi giáo vụ lưu điểm, hệ thống tự gửi thông báo "Cập nhật điểm" tới sinh viên kèm điểm tổng kết và điểm chữ.</p>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

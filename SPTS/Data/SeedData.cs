@@ -126,5 +126,69 @@ namespace SPTS.Data
 
             await db.SaveChangesAsync();
         }
+            // Dữ liệu bổ sung cho báo cáo, biểu đồ (chạy một lần, khi chưa có lớp 23A2)
+        public static async Task SeedMoreAsync(ApplicationDbContext db, IPasswordHasher<User> hasher)
+        {
+            if (await db.Classes.AnyAsync(c => c.ClassCode == "23A2")) return;
+            var prog = await db.Programs.FirstAsync();
+            var advisor = await db.Staffs.FirstAsync();
+            var studentRole = await db.Roles.FirstAsync(r => r.RoleName == Role.Student);
+            var staffRole = await db.Roles.FirstAsync(r => r.RoleName == Role.Staff);
+            var courses = await db.Courses.OrderBy(c => c.CourseCode).ToListAsync();
+            var hk1 = await db.Semesters.OrderBy(x => x.StartDate).FirstAsync();
+            var hk2 = await db.Semesters.OrderBy(x => x.StartDate).Skip(1).FirstAsync();
+            var scales = await db.GradeScales.OrderByDescending(x => x.MinScore).ToListAsync();
+
+            // Thêm khoa, ngành, cán bộ để danh mục có nhiều bản ghi
+            var fac2 = new Faculty { FacultyCode = "KT", FacultyName = "Khoa Kinh tế" };
+            db.Add(new Major { MajorCode = "7340101", MajorName = "Quản trị kinh doanh", Faculty = fac2 });
+            db.Add(new Major { MajorCode = "7480103", MajorName = "Kỹ thuật phần mềm", FacultyId = prog.Major?.FacultyId ?? advisor.FacultyId });
+            var cvUser = new User { Username = "covan", FullName = "Trần Quốc Cố Vấn", Email = "covan@spts.edu.vn" };
+            cvUser.PasswordHash = hasher.HashPassword(cvUser, "Staff@123");
+            cvUser.UserRoles.Add(new UserRole { RoleId = staffRole.RoleId });
+            var advisor2 = new Staff { StaffCode = "CB002", FullName = cvUser.FullName, Position = "Cố vấn học tập", FacultyId = advisor.FacultyId, User = cvUser };
+            var cls2 = new Class { ClassCode = "23A2", ProgramId = prog.ProgramId, Advisor = advisor2 };
+            db.AddRange(fac2, advisor2, cls2);
+            db.Courses.Add(new Course { CourseCode = "IT303", CourseName = "Phát triển ứng dụng di động", Credits = 3, Description = "Lập trình ứng dụng Android/iOS đa nền tảng." });
+            var hk3 = new Semester { SemesterName = "HK1 2024-2025", StartDate = new DateTime(2024, 9, 9), EndDate = new DateTime(2025, 1, 19) };
+            db.Semesters.Add(hk3);
+
+            string[] names = { "Nguyễn Hoàng Dũng", "Vũ Thị Hà", "Đỗ Minh Khôi", "Bùi Thu Lan", "Hoàng Gia Minh", "Ngô Bảo Ngọc", "Phan Thanh Phúc", "Lý Mỹ Quyên", "Đặng Văn Sơn", "Trịnh Kim Tuyến" };
+            var rnd = new Random(2026);
+            for (int i = 0; i < names.Length; i++)
+            {
+                var code = (2310004 + i).ToString();
+                var u = new User { Username = "sv" + code, FullName = names[i], Email = $"sv{code}@spts.edu.vn" };
+                u.PasswordHash = hasher.HashPassword(u, "Student@123");
+                u.UserRoles.Add(new UserRole { RoleId = studentRole.RoleId });
+                var st = new Student
+                {
+                    StudentCode = code, FullName = names[i], User = u, Email = u.Email, Gender = i % 2 == 0 ? "Nam" : "Nữ",
+                    DateOfBirth = new DateTime(2005, i % 12 + 1, 5 + i), Class = i < 5 ? cls2 : await db.Classes.FirstAsync(c => c.ClassCode == "23A1"),
+                    Status = i == 9 ? "Bảo lưu" : "Đang học"
+                };
+                db.Students.Add(st);
+                // Mức học lực khác nhau để biểu đồ phân bố có đủ loại
+                var level = 4.5 + (i % 5) * 1.1;
+                for (int c = 0; c < 4; c++)
+                {
+                    decimal Score(double spread) => (decimal)Math.Round(Math.Clamp(level + rnd.NextDouble() * spread - spread / 2, 0, 10), 1);
+                    var g = new Grade
+                    {
+                        Student = st, CourseId = courses[c].CourseId, Semester = c < 2 ? hk1 : hk2,
+                        AttendanceScore = Score(2) + 1 > 10 ? 10 : Score(2) + 1, MidtermScore = Score(3), FinalScore = Score(4),
+                        UpdatedBy = advisor.UserId, UpdatedAt = DateTime.Now
+                    };
+                    var total = Math.Round(g.AttendanceScore.Value * 0.1m + g.MidtermScore.Value * 0.3m + g.FinalScore.Value * 0.6m, 1, MidpointRounding.AwayFromZero);
+                    var sc = scales.First(x => total >= x.MinScore);
+                    g.TotalScore = total; g.LetterGrade = sc.LetterGrade; g.GradePoint = sc.GradePoint; g.IsPassed = total >= 4.0m;
+                    db.Grades.Add(g);
+                }
+                db.Notifications.Add(new Notification { User = u, Title = "Chào mừng đến SPTS", Content = "Theo dõi tiến độ học tập, GPA và lộ trình CTĐT của bạn tại mục Tiến độ học tập." });
+            }
+            foreach (var su in await db.Students.Where(s => s.UserId != null).Select(s => s.UserId!.Value).ToListAsync())
+                db.Notifications.Add(new Notification { UserId = su, Title = "Lịch đăng ký học phần HK1 2024-2025", Content = "Sinh viên đăng ký học phần từ 15/08 đến 25/08. Kiểm tra điều kiện tiên quyết trước khi đăng ký." });
+            await db.SaveChangesAsync();
+        }
     }
 }

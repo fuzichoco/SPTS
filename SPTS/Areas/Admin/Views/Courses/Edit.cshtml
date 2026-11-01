@@ -1,0 +1,53 @@
+@model Course
+@{
+    var isNew = Model.CourseId == 0;
+    ViewData["Title"] = isNew ? "Thêm học phần" : "Sửa học phần";
+}
+<div class="page-header">
+    <div>
+        <a asp-action="Index" class="back-link"><i class="bi bi-arrow-left"></i>Danh sách học phần</a>
+        <h1 class="page-title">@ViewData["Title"]</h1>
+    </div>
+</div>
+<div class="card" style="max-width:860px">
+    <div class="card-body p-4">
+        <form asp-action="Edit" asp-route-id="@(isNew ? null : Model.CourseId)" method="post">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger small"></div>
+            <input type="hidden" asp-for="CourseId" />
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label asp-for="CourseCode" class="form-label">Mã học phần</label>
+                    <input asp-for="CourseCode" class="form-control" placeholder="IT303"/>
+                    <span asp-validation-for="CourseCode" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="CourseName" class="form-label">Tên học phần</label>
+                    <input asp-for="CourseName" class="form-control" />
+                    <span asp-validation-for="CourseName" class="text-danger"></span>
+                </div>
+                <div class="col-md-2">
+                    <label asp-for="Credits" class="form-label">Số tín chỉ</label>
+                    <input asp-for="Credits" class="form-control" type="number" min="1" max="10"/>
+                    <span asp-validation-for="Credits" class="text-danger"></span>
+                </div>
+                <div class="col-md-12">
+                    <label asp-for="Description" class="form-label">Mô tả</label>
+                    <textarea asp-for="Description" rows="3" class="form-control"></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+                <div class="col-12">
+                    <label class="form-label" for="prerequisiteIds">Học phần tiên quyết</label>
+                    <select id="prerequisiteIds" name="prerequisiteIds" asp-items="ViewBag.AllCourses" class="form-select" multiple size="6"></select>
+                    <div class="form-text">Giữ Ctrl để chọn nhiều học phần.</div>
+                </div>
+            </div>
+            <div class="d-flex gap-2 justify-content-end mt-4 pt-3 border-top">
+                <a asp-action="Index" class="btn btn-light">Hủy</a>
+                <button class="btn btn-primary"><i class="bi bi-check2 me-1"></i>Lưu</button>
+            </div>
+        </form>
+    </div>
+</div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,86 @@
+@model GradeEditModel
+@{
+    var isNew = Model.GradeId == null;
+    ViewData["Title"] = isNew ? "Nhập điểm" : "Sửa điểm";
+}
+<div class="page-header">
+    <div>
+        <a asp-action="Index" class="back-link"><i class="bi bi-arrow-left"></i>Bảng điểm</a>
+        <h1 class="page-title">@ViewData["Title"]</h1>
+    </div>
+</div>
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body p-4">
+                <form asp-action="Edit" method="post">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger small"></div>
+                    <input type="hidden" asp-for="GradeId" />
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="StudentId" class="form-label"></label>
+                            <select asp-for="StudentId" asp-items="ViewBag.Students" class="form-select" disabled="@(!isNew)"><option value="">-- Chọn sinh viên --</option></select>
+                            @if (!isNew) { <input type="hidden" asp-for="StudentId" /> }
+                            <span asp-validation-for="StudentId" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="CourseId" class="form-label"></label>
+                            <select asp-for="CourseId" asp-items="ViewBag.Courses" class="form-select"><option value="">-- Chọn học phần --</option></select>
+                            <span asp-validation-for="CourseId" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="SemesterId" class="form-label"></label>
+                            <select asp-for="SemesterId" asp-items="ViewBag.Semesters" class="form-select"><option value="">-- Học kỳ chưa khóa --</option></select>
+                            <span asp-validation-for="SemesterId" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-2">
+                            <label asp-for="AttemptNo" class="form-label"></label>
+                            <input asp-for="AttemptNo" type="number" min="1" max="10" class="form-control" />
+                        </div>
+                        @foreach (var p in new[] { "AttendanceScore", "MidtermScore", "FinalScore" })
+                        {
+                            <div class="col-md-4">
+                                @Html.Label(p, null, new { @class = "form-label" })
+                                @Html.TextBox(p, null, "{0:0.0}", new { @class = "form-control form-control-lg text-center fw-bold score", type = "number", min = 0, max = 10, step = 0.1 })
+                                @Html.ValidationMessage(p, new { @class = "text-danger" })
+                            </div>
+                        }
+                    </div>
+                    <div class="d-flex gap-2 justify-content-end mt-4 pt-3 border-top">
+                        <a asp-action="Index" class="btn btn-light">Hủy</a>
+                        <button class="btn btn-primary"><i class="bi bi-check2 me-1"></i>Lưu điểm</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card hero-card">
+            <div class="card-body p-4 position-relative" style="z-index:1">
+                <div class="muted small mb-1">Xem trước điểm tổng kết</div>
+                <div class="display-4 fw-bold" id="pvTotal">—</div>
+                <div class="d-flex gap-2 mt-2"><span class="pill" style="background:rgba(255,255,255,.15);color:#fff" id="pvLetter">—</span><span class="pill" style="background:rgba(255,255,255,.15);color:#fff" id="pvResult">Chưa đủ điểm</span></div>
+                <hr style="border-color:rgba(255,255,255,.2)" />
+                <div class="small muted">Tổng = CC × 10% + GK × 30% + CK × 60%, làm tròn 1 chữ số. Đạt khi ≥ 4.0. Server tính lại và quy đổi theo thang điểm khi lưu.</div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+<script>
+    (function () {
+        const [cc, gk, ck] = ['AttendanceScore', 'MidtermScore', 'FinalScore'].map(id => document.getElementById(id));
+        const scales = [[8.5, 'A'], [8.0, 'B+'], [7.0, 'B'], [6.5, 'C+'], [5.5, 'C'], [5.0, 'D+'], [4.0, 'D'], [0, 'F']];
+        function preview() {
+            if ([cc, gk, ck].some(i => i.value === '')) return;
+            const t = Math.round((cc.value * 0.1 + gk.value * 0.3 + ck.value * 0.6) * 10) / 10;
+            document.getElementById('pvTotal').textContent = t.toFixed(1);
+            document.getElementById('pvLetter').textContent = scales.find(s => t >= s[0])[1];
+            document.getElementById('pvResult').textContent = t >= 4 ? 'Đạt' : 'Chưa đạt';
+        }
+        [cc, gk, ck].forEach(i => i.addEventListener('input', preview));
+        preview();
+    })();
+</script>
+}

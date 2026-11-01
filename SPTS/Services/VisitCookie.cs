@@ -69,7 +69,21 @@ namespace SPTS.Services
         {
             ["Dashboard"] = "Bảng điều khiển",
             ["Users"] = "Quản lý tài khoản",
-            ["AuditLogs"] = "Nhật ký hệ thống"
+            ["AuditLogs"] = "Nhật ký hệ thống",
+            ["Faculties"] = "Khoa",
+            ["Majors"] = "Ngành",
+            ["Programs"] = "Chương trình đào tạo",
+            ["Classes"] = "Lớp sinh hoạt",
+            ["StaffMembers"] = "Cán bộ",
+            ["Students"] = "Sinh viên",
+            ["Courses"] = "Học phần",
+            ["Grades"] = "Quản lý điểm",
+            ["Semesters"] = "Học kỳ",
+            ["GradeScales"] = "Thang điểm",
+            ["Reports"] = "Báo cáo thống kê",
+            ["Notifications"] = "Thông báo",
+            ["Progress"] = "Tiến độ học tập",
+            ["Lookup"] = "Tra cứu học phần"
         };
 
         public void OnActionExecuting(ActionExecutingContext context) { }

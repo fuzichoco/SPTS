@@ -1,0 +1,43 @@
+@model Class
+@{
+    var isNew = Model.ClassId == 0;
+    ViewData["Title"] = isNew ? "Thêm lớp" : "Sửa lớp";
+}
+<div class="page-header">
+    <div>
+        <a asp-action="Index" class="back-link"><i class="bi bi-arrow-left"></i>Danh sách lớp</a>
+        <h1 class="page-title">@ViewData["Title"]</h1>
+    </div>
+</div>
+<div class="card" style="max-width:860px">
+    <div class="card-body p-4">
+        <form asp-action="Edit" asp-route-id="@(isNew ? null : Model.ClassId)" method="post">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger small"></div>
+            <input type="hidden" asp-for="ClassId" />
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label asp-for="ClassCode" class="form-label">Mã lớp</label>
+                    <input asp-for="ClassCode" class="form-control" placeholder="23A1"/>
+                    <span asp-validation-for="ClassCode" class="text-danger"></span>
+                </div>
+                <div class="col-md-8">
+                    <label asp-for="ProgramId" class="form-label">Chương trình đào tạo</label>
+                    <select asp-for="ProgramId" asp-items="ViewBag.Programs" class="form-select" ><option value="">-- Chọn --</option></select>
+                    <span asp-validation-for="ProgramId" class="text-danger"></span>
+                </div>
+                <div class="col-md-12">
+                    <label asp-for="AdvisorId" class="form-label">Cố vấn học tập</label>
+                    <select asp-for="AdvisorId" asp-items="ViewBag.Advisors" class="form-select" ><option value="">-- Chưa phân công --</option></select>
+                    <span asp-validation-for="AdvisorId" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="d-flex gap-2 justify-content-end mt-4 pt-3 border-top">
+                <a asp-action="Index" class="btn btn-light">Hủy</a>
+                <button class="btn btn-primary"><i class="bi bi-check2 me-1"></i>Lưu</button>
+            </div>
+        </form>
+    </div>
+</div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,69 @@
+@model TrainingProgram
+@{
+    var isNew = Model.ProgramId == 0;
+    ViewData["Title"] = isNew ? "Thêm chương trình đào tạo" : "Sửa chương trình đào tạo";
+}
+<div class="page-header">
+    <div>
+        <a asp-action="Index" class="back-link"><i class="bi bi-arrow-left"></i>Danh sách CTĐT</a>
+        <h1 class="page-title">@ViewData["Title"]</h1>
+    </div>
+</div>
+<div class="card" style="max-width:860px">
+    <div class="card-body p-4">
+        <form asp-action="Edit" asp-route-id="@(isNew ? null : Model.ProgramId)" method="post">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger small"></div>
+            <input type="hidden" asp-for="ProgramId" />
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label asp-for="ProgramCode" class="form-label">Mã CTĐT</label>
+                    <input asp-for="ProgramCode" class="form-control" placeholder="CNTT-K30"/>
+                    <span asp-validation-for="ProgramCode" class="text-danger"></span>
+                </div>
+                <div class="col-md-8">
+                    <label asp-for="ProgramName" class="form-label">Tên chương trình</label>
+                    <input asp-for="ProgramName" class="form-control" />
+                    <span asp-validation-for="ProgramName" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="facultyPicker">Khoa</label>
+                    <select id="facultyPicker" asp-items="ViewBag.Faculties" class="form-select" data-majors-url="@Url.Action("ByFaculty", "Majors")"><option value="">-- Chọn khoa --</option></select>
+                    <div class="form-text">Chọn khoa để lọc ngành (tải bằng fetch).</div>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="MajorId" class="form-label">Ngành</label>
+                    <select asp-for="MajorId" asp-items="ViewBag.Majors" class="form-select" ><option value="">-- Chọn --</option></select>
+                    <span asp-validation-for="MajorId" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="CohortYear" class="form-label">Khóa (năm tuyển sinh)</label>
+                    <input asp-for="CohortYear" class="form-control" type="number"/>
+                    <span asp-validation-for="CohortYear" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="TotalCredits" class="form-label">Tổng tín chỉ</label>
+                    <input asp-for="TotalCredits" class="form-control" type="number"/>
+                    <span asp-validation-for="TotalCredits" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="d-flex gap-2 justify-content-end mt-4 pt-3 border-top">
+                <a asp-action="Index" class="btn btn-light">Hủy</a>
+                <button class="btn btn-primary"><i class="bi bi-check2 me-1"></i>Lưu</button>
+            </div>
+        </form>
+    </div>
+</div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+<script>
+    // Dropdown phụ thuộc: chọn Khoa -> fetch danh sách Ngành (JSON)
+    const fac = document.getElementById('facultyPicker');
+    const major = document.getElementById('MajorId');
+    fac.addEventListener('change', async () => {
+        major.replaceChildren(new Option('-- Chọn ngành --', ''));
+        if (!fac.value) return;
+        const res = await fetch(`${fac.dataset.majorsUrl}?facultyId=${fac.value}`);
+        (await res.json()).forEach(m => major.add(new Option(m.majorName, m.majorId)));
+    });
+</script>
+}

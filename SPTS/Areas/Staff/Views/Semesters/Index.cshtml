@@ -1,0 +1,40 @@
+@model List<Semester>
+@{ ViewData["Title"] = "Học kỳ"; }
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Học kỳ</h1>
+        <p class="page-sub">Khóa học kỳ để chốt điểm; học kỳ đã khóa không thể nhập/sửa điểm.</p>
+    </div>
+    <a asp-action="Edit" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Thêm học kỳ</a>
+</div>
+<div class="row g-3">
+    @foreach (var s in Model)
+    {
+        var current = DateTime.Today >= s.StartDate && DateTime.Today <= s.EndDate;
+        <div class="col-md-6 col-xl-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="stat-icon @(s.IsLocked ? "tone-red" : "tone-green")"><i class="bi @(s.IsLocked ? "bi-lock-fill" : "bi-unlock")"></i></div>
+                        <span class="d-flex gap-1">
+                            @if (current) { <span class="pill info">Đang diễn ra</span> }
+                            <span class="pill @(s.IsLocked ? "bad" : "ok")">@(s.IsLocked ? "Đã khóa" : "Đang mở")</span>
+                        </span>
+                    </div>
+                    <h5 class="fw-bold mb-1">@s.SemesterName</h5>
+                    <div class="text-muted small mb-3"><i class="bi bi-calendar-range me-1"></i>@s.StartDate.ToString("dd/MM/yyyy") – @s.EndDate.ToString("dd/MM/yyyy")</div>
+                    <div class="small"><strong>@s.Grades.Count</strong> bản ghi điểm</div>
+                </div>
+                <div class="card-footer d-flex gap-2">
+                    <form asp-action="ToggleLock" asp-route-id="@s.SemesterId" method="post" data-confirm="@(s.IsLocked ? "Mở khóa" : "Khóa") @s.SemesterName?">
+                        <button class="btn btn-sm @(s.IsLocked ? "btn-outline-primary" : "btn-outline-danger")"><i class="bi @(s.IsLocked ? "bi-unlock" : "bi-lock") me-1"></i>@(s.IsLocked ? "Mở khóa" : "Khóa điểm")</button>
+                    </form>
+                    <a asp-action="Edit" asp-route-id="@s.SemesterId" class="btn btn-sm btn-light"><i class="bi bi-pencil"></i></a>
+                    <form asp-action="Delete" asp-route-id="@s.SemesterId" method="post" class="ms-auto" data-confirm="Xóa @s.SemesterName?">
+                        <button class="btn btn-sm btn-light text-danger"><i class="bi bi-trash"></i></button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    }
+</div>

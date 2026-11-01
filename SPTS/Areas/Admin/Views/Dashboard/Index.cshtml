@@ -3,95 +3,109 @@
     ViewData["Title"] = "Bảng điều khiển";
     var visit = SPTS.Services.VisitTrackingFilter.Current(Context);
 }
-<h2 class="mb-3">@ViewData["Title"]</h2>
-
-<div class="row g-3 mb-4">
-    <div class="col-md-6">
-        <div class="card h-100">
-            <div class="card-header fw-semibold">Thông tin truy cập <span class="badge bg-secondary ms-1">Persistent Cookie · 30 ngày</span></div>
-            <div class="card-body">
-                <p class="mb-1">Số lần truy cập: <strong>@(visit?.Count ?? 0)</strong></p>
-                <p class="mb-1">Lần truy cập trước: <strong>@(Context.Session.GetString("PreviousVisit") ?? "—")</strong></p>
-                <p class="mb-1">Chức năng thường dùng:</p>
-                <ul class="mb-0">
-                    @foreach (var (name, count) in visit?.TopFeatures(3) ?? [])
-                    {
-                        <li>@name <span class="text-muted">(@count lần)</span></li>
-                    }
-                </ul>
-            </div>
-        </div>
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Xin chào, @(User.FindFirst("FullName")?.Value) 👋</h1>
+        <p class="page-sub">Tổng quan hệ thống hôm nay, @DateTime.Now.ToString("dddd, dd/MM/yyyy").</p>
     </div>
-    <div class="col-md-6">
-        <div class="card h-100">
-            <div class="card-header fw-semibold">Phiên làm việc <span class="badge bg-secondary ms-1">Session · 30 phút</span></div>
-            <div class="card-body">
-                <p class="mb-1">Người dùng: <strong>@(Context.Session.GetString("FullName") ?? User.FindFirst("FullName")?.Value)</strong></p>
-                <p class="mb-1">Vai trò: <strong>@(Context.Session.GetString("Roles") ?? "—")</strong></p>
-                <p class="mb-1">Đăng nhập lúc: <strong>@(Context.Session.GetString("LoginAt") ?? "—")</strong></p>
-                <p class="mb-0 text-muted small">Session ID: @Context.Session.Id[..8]… · Xác thực bởi ASP.NET Core Identity</p>
-            </div>
-        </div>
+    <div class="d-flex gap-2">
+        <a asp-controller="Users" asp-action="Create" class="btn btn-primary"><i class="bi bi-person-plus me-1"></i>Thêm tài khoản</a>
+        <a asp-controller="Students" asp-action="Edit" class="btn btn-light"><i class="bi bi-person-vcard me-1"></i>Thêm sinh viên</a>
     </div>
 </div>
 
 <div class="row g-3 mb-4">
-    @foreach (var (label, value, color) in new[]
+    @foreach (var (label, value, icon, tone) in new[]
     {
-        ("Tổng tài khoản", Model.TotalUsers, "primary"),
-        ("Đang hoạt động", Model.ActiveUsers, "success"),
-        ("Đã khóa / tạm khóa", Model.LockedUsers, "secondary"),
-        ("Đăng nhập hôm nay", Model.LoginsToday, "info"),
-        ("Đăng nhập sai hôm nay", Model.FailedLoginsToday, "danger")
+        ("Tổng tài khoản", Model.TotalUsers, "bi-people", "tone-blue"),
+        ("Đang hoạt động", Model.ActiveUsers, "bi-person-check", "tone-green"),
+        ("Đã khóa / tạm khóa", Model.LockedUsers, "bi-person-lock", "tone-amber"),
+        ("Đăng nhập hôm nay", Model.LoginsToday, "bi-box-arrow-in-right", "tone-violet"),
+        ("Đăng nhập sai hôm nay", Model.FailedLoginsToday, "bi-shield-exclamation", "tone-red")
     })
     {
-        <div class="col-6 col-md">
-            <div class="card border-@color h-100">
-                <div class="card-body">
-                    <div class="text-muted small">@label</div>
-                    <div class="fs-2 fw-bold text-@color">@value</div>
-                </div>
-            </div>
+        <div class="col-6 col-md-4 col-xl">
+            <div class="card stat"><div class="stat-icon @tone"><i class="bi @icon"></i></div><div><div class="stat-label">@label</div><div class="stat-value">@value</div></div></div>
         </div>
     }
 </div>
 
-<div class="row g-3">
-    <div class="col-md-4">
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
         <div class="card h-100">
-            <div class="card-header fw-semibold">Tài khoản theo vai trò</div>
-            <ul class="list-group list-group-flush">
-                @foreach (var (role, count) in Model.UsersByRole)
-                {
-                    <li class="list-group-item d-flex justify-content-between">@role <span class="badge bg-primary rounded-pill">@count</span></li>
-                }
-            </ul>
-            <div class="card-body">
-                <a asp-controller="Users" asp-action="Index" class="btn btn-sm btn-outline-primary">Quản lý tài khoản</a>
-                <a asp-controller="Users" asp-action="Create" class="btn btn-sm btn-primary">+ Thêm</a>
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span class="section-title">Hoạt động gần đây</span>
+                <a asp-controller="AuditLogs" asp-action="Index" class="small">Xem tất cả <i class="bi bi-arrow-right"></i></a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <tbody>
+                    @foreach (var l in Model.RecentLogs)
+                    {
+                        var tone = l.Action.Contains("FAILED") || l.Action.Contains("DELETE") ? "bad" : l.Action.StartsWith("LOGIN") || l.Action.StartsWith("LOGOUT") ? "info" : "ok";
+                        <tr>
+                            <td class="text-muted small text-nowrap"><i class="bi bi-clock me-1"></i>@l.CreatedAt.ToString("dd/MM HH:mm")</td>
+                            <td class="cell-main">@(l.Username ?? "(hệ thống)")</td>
+                            <td><span class="pill @tone">@l.Action</span></td>
+                            <td class="small text-muted">@l.TableName @l.RecordId</td>
+                            <td class="actions"><a asp-controller="AuditLogs" asp-action="Detail" asp-route-id="@l.LogId" class="btn-icon"><i class="bi bi-eye"></i></a></td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
-    <div class="col-md-8">
+    <div class="col-lg-4">
         <div class="card h-100">
-            <div class="card-header fw-semibold d-flex justify-content-between">
-                Hoạt động gần đây
-                <a asp-controller="AuditLogs" asp-action="Index" class="small">Xem tất cả</a>
+            <div class="card-header"><span class="section-title">Tài khoản theo vai trò</span></div>
+            <div class="card-body">
+                @{ var max = Math.Max(1, Model.UsersByRole.Values.DefaultIfEmpty(0).Max()); }
+                @foreach (var (role, count) in Model.UsersByRole)
+                {
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between small mb-1"><strong>@role</strong><span>@count</span></div>
+                        <div class="bar"><span style="width:@(count * 100 / max)%"></span></div>
+                    </div>
+                }
+                <div class="d-grid gap-2 mt-4">
+                    <a asp-controller="Users" asp-action="Index" class="btn btn-light"><i class="bi bi-people me-1"></i>Quản lý tài khoản</a>
+                    <a asp-area="Staff" asp-controller="Reports" asp-action="Index" class="btn btn-light"><i class="bi bi-bar-chart-line me-1"></i>Báo cáo học tập</a>
+                </div>
             </div>
-            <table class="table table-sm mb-0 align-middle">
-                <tbody>
-                    @foreach (var l in Model.RecentLogs)
-                    {
-                        <tr>
-                            <td class="text-muted small text-nowrap">@l.CreatedAt.ToString("dd/MM HH:mm")</td>
-                            <td>@(l.Username ?? "(hệ thống)")</td>
-                            <td><span class="badge bg-info text-dark">@l.Action</span></td>
-                            <td class="small">@l.TableName @l.RecordId</td>
-                            <td><a asp-controller="AuditLogs" asp-action="Detail" asp-route-id="@l.LogId" class="small">Chi tiết</a></td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between"><span class="section-title"><i class="bi bi-cookie me-1"></i>Thông tin truy cập</span><span class="pill">Persistent Cookie · 30 ngày</span></div>
+            <div class="card-body">
+                <div class="d-flex gap-4 mb-3">
+                    <div><div class="stat-label">Số lần truy cập</div><div class="stat-value">@(visit?.Count ?? 0)</div></div>
+                    <div><div class="stat-label">Lần truy cập trước</div><div class="fw-semibold mt-2">@(Context.Session.GetString("PreviousVisit") ?? "—")</div></div>
+                </div>
+                <div class="stat-label mb-2">Chức năng thường dùng</div>
+                @foreach (var (name, count) in visit?.TopFeatures(3) ?? [])
+                {
+                    <span class="pill info me-1 mb-1">@name · @count lần</span>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between"><span class="section-title"><i class="bi bi-hourglass-split me-1"></i>Phiên làm việc</span><span class="pill">Session · 30 phút</span></div>
+            <div class="card-body">
+                <dl class="row mb-0 small">
+                    <dt class="col-5 text-muted fw-normal">Người dùng</dt><dd class="col-7 fw-semibold">@(Context.Session.GetString("FullName") ?? User.FindFirst("FullName")?.Value)</dd>
+                    <dt class="col-5 text-muted fw-normal">Vai trò</dt><dd class="col-7 fw-semibold">@(Context.Session.GetString("Roles") ?? "—")</dd>
+                    <dt class="col-5 text-muted fw-normal">Đăng nhập lúc</dt><dd class="col-7 fw-semibold">@(Context.Session.GetString("LoginAt") ?? "—")</dd>
+                    <dt class="col-5 text-muted fw-normal">Session ID</dt><dd class="col-7"><span class="code">@Context.Session.Id[..8]…</span></dd>
+                    <dt class="col-5 text-muted fw-normal">Xác thực</dt><dd class="col-7 mb-0">ASP.NET Core Identity</dd>
+                </dl>
+            </div>
         </div>
     </div>
 </div>

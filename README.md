@@ -49,6 +49,17 @@ SPTS.sln                         # Solution mở bằng Visual Studio
 
 Mỗi module là một Area (`Areas/<Module>/Controllers`, `Areas/<Module>/Views`); entity, DbContext và service dùng chung đặt ở thư mục gốc của project. Cả nhóm chạy toàn bộ ứng dụng từ một project.
 
+## Chức năng đã hoàn thành
+
+| Thành viên | Module | Trang chính |
+| --- | --- | --- |
+| TV1 – Đoàn Phan Anh | Đăng nhập Identity (khóa sau 5 lần sai), phân quyền, quản lý tài khoản (MVC + AJAX), nhật ký hệ thống, Persistent Cookie và Session | `/Account/Login`, `/Admin/Dashboard`, `/Admin/Users`, `/Admin/AuditLogs` |
+| TV2 – Nguyễn Xuân Dũng | Nhập/sửa điểm, lưu nhanh bằng AJAX, tự tính điểm tổng/chữ/thang 4, khóa học kỳ, thang điểm, cache `IMemoryCache`, cookie nhớ học kỳ | `/Staff/Grades`, `/Staff/Semesters`, `/Staff/GradeScales` |
+| TV3 | Tiến độ học tập (GPA, tín chỉ, cảnh báo, biểu đồ), tra cứu học phần bằng fetch, Session lưu học phần xem gần đây, báo cáo thống kê lớp, xuất CSV, thông báo | `/Student/Progress`, `/Student/Lookup`, `/Staff/Reports`, `/Staff/Announcements`, `/Notifications` |
+| TV4 – Dương Đức Hợp | Danh mục khoa, ngành, CTĐT (học phần, nhóm tự chọn), lớp, cán bộ, sinh viên (tạo kèm tài khoản), học phần và tiên quyết; dropdown Khoa → Ngành bằng fetch | `/Admin/Faculties`, `/Admin/Majors`, `/Admin/Programs`, `/Admin/Classes`, `/Admin/StaffMembers`, `/Admin/Students`, `/Admin/Courses` |
+
+Tài khoản demo: `admin / Admin@123`, `giaovu / Staff@123`, `covan / Staff@123`, `sv2310001 / Student@123` (sinh viên `sv2310001`–`sv2310013`).
+
 ## Tài liệu làm việc nhóm
 
 - [Thiết kế database, danh sách bảng và quan hệ](docs/database/README.md)

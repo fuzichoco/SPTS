@@ -1,22 +1,25 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using SPTS.Data;
 using SPTS.Models;
+using SPTS.Models.ViewModels;
 
 namespace SPTS.Controllers;
 
 public class HomeController : Controller
 {
-    private readonly ILogger<HomeController> _logger;
+    private readonly ApplicationDbContext _db;
 
-    public HomeController(ILogger<HomeController> logger)
-    {
-        _logger = logger;
-    }
+    public HomeController(ApplicationDbContext db) => _db = db;
 
-    public IActionResult Index()
+    public async Task<IActionResult> Index() => View(new HomeStatsViewModel
     {
-        return View();
-    }
+        Students = await _db.Students.CountAsync(s => !s.IsDeleted),
+        Courses = await _db.Courses.CountAsync(c => !c.IsDeleted),
+        Programs = await _db.Programs.CountAsync(),
+        Grades = await _db.Grades.CountAsync()
+    });
 
     public IActionResult Privacy()
     {

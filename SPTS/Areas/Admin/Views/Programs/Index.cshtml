@@ -1,0 +1,47 @@
+@model PagedResult<TrainingProgram>
+@{ ViewData["Title"] = "Chương trình đào tạo"; }
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Chương trình đào tạo</h1>
+        <p class="page-sub">CTĐT theo ngành và khóa tuyển sinh, gồm danh sách học phần.</p>
+    </div>
+    <a asp-action="Edit" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Thêm CTĐT</a>
+</div>
+<div class="card">
+    <div class="card-toolbar">
+        <form method="get">
+            <partial name="_SearchBox" model="@("Tìm mã hoặc tên CTĐT")" />
+            <button class="btn btn-light"><i class="bi bi-funnel me-1"></i>Lọc</button>
+        </form>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead><tr><th>Mã CTĐT</th><th>Tên chương trình</th><th>Ngành</th><th>Khóa</th><th>Tín chỉ</th><th>Học phần</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var x in Model.Items)
+            {
+                <tr>
+                    <td><span class="code">@x.ProgramCode</span></td>
+                    <td><a asp-action="Details" asp-route-id="@x.ProgramId" class="cell-main">@x.ProgramName</a><div class="cell-sub">@x.Classes.Count lớp</div></td>
+                    <td>@x.Major.MajorName<div class="cell-sub">@x.Major.Faculty.FacultyName</div></td>
+                    <td>@x.CohortYear</td>
+                    <td><strong>@x.TotalCredits</strong> TC</td>
+                    <td><span class="pill info">@x.ProgramCourses.Count HP</span></td>
+                    <td class="actions">
+                    <a asp-action="Details" asp-route-id="@x.ProgramId" class="btn-icon" title="Học phần trong CTĐT"><i class="bi bi-list-check"></i></a>
+                    <a asp-action="Edit" asp-route-id="@x.ProgramId" class="btn-icon" title="Sửa"><i class="bi bi-pencil"></i></a>
+                    <form asp-action="Delete" asp-route-id="@x.ProgramId" method="post" class="d-inline" data-confirm="Xóa @x.ProgramName?">
+                        <button class="btn-icon danger" title="Xóa"><i class="bi bi-trash"></i></button>
+                    </form>
+                </td>
+                </tr>
+            }
+        @if (Model.Items.Count == 0)
+        {
+            <tr><td colspan="7" class="empty"><i class="bi bi-inbox"></i>Không có dữ liệu</td></tr>
+        }
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer"><partial name="_Pager" model="Model" /></div>
+</div>

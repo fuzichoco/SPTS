@@ -1,8 +1,68 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@model HomeStatsViewModel
+@{
+    ViewData["Title"] = "Trang chủ";
+    var authed = User.Identity?.IsAuthenticated == true;
+    var home = User.IsInRole(Role.Admin) ? "/Admin/Dashboard" : User.IsInRole(Role.Staff) ? "/Staff/Grades" : User.IsInRole(Role.Student) ? "/Student/Progress" : null;
 }
-
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+@if (!authed)
+{
+    @:<div class="container">
+    <nav class="landing-nav">
+        <a class="brand p-0" asp-controller="Home" asp-action="Index" style="color:var(--ink)">
+            <span class="brand-mark"><i class="bi bi-mortarboard-fill"></i></span>
+            <span><strong>SPTS</strong><small>Theo dõi tiến độ học tập</small></span>
+        </a>
+        <a asp-controller="Account" asp-action="Login" class="btn btn-primary"><i class="bi bi-box-arrow-in-right me-1"></i>Đăng nhập</a>
+    </nav>
+}
+<section class="@(authed ? "" : "landing-hero")">
+    <div class="row align-items-center g-4">
+        <div class="col-lg-7">
+            <span class="pill info mb-3"><i class="bi bi-stars"></i> Bài tập lớn Web nâng cao · ASP.NET Core MVC</span>
+            <h1 class="@(authed ? "page-title fs-1" : "")">Hệ thống theo dõi <span class="grad-text">tiến độ học tập</span> sinh viên</h1>
+            <p class="lead mt-3">Quản lý chương trình đào tạo, nhập điểm, tính GPA và cảnh báo học vụ, tra cứu học phần, tất cả trong một hệ thống phân quyền rõ ràng.</p>
+            <div class="d-flex gap-2 mt-4">
+                @if (home != null)
+                {
+                    <a href="@home" class="btn btn-primary btn-lg px-4">Vào trang làm việc <i class="bi bi-arrow-right ms-1"></i></a>
+                }
+                else
+                {
+                    <a asp-controller="Account" asp-action="Login" class="btn btn-primary btn-lg px-4">Bắt đầu ngay <i class="bi bi-arrow-right ms-1"></i></a>
+                }
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="landing-stats">
+                <div class="row g-4">
+                    <div class="col-6"><div class="v">@Model.Students</div><div class="l">Sinh viên</div></div>
+                    <div class="col-6"><div class="v">@Model.Courses</div><div class="l">Học phần</div></div>
+                    <div class="col-6"><div class="v">@Model.Programs</div><div class="l">Chương trình đào tạo</div></div>
+                    <div class="col-6"><div class="v">@Model.Grades</div><div class="l">Bản ghi điểm</div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<section class="row g-3 my-4">
+    @foreach (var (icon, tone, title, text) in new[]
+    {
+        ("bi-shield-lock", "tone-blue", "Xác thực & phân quyền", "Identity, khóa tài khoản khi sai mật khẩu, nhật ký mọi thao tác."),
+        ("bi-pencil-square", "tone-green", "Quản lý điểm", "Nhập điểm thành phần, tự tính điểm tổng, điểm chữ và thang 4."),
+        ("bi-graph-up-arrow", "tone-violet", "Tiến độ & báo cáo", "GPA, tín chỉ tích lũy, cảnh báo học vụ, thống kê theo lớp."),
+        ("bi-diagram-3", "tone-amber", "Danh mục & CTĐT", "Khoa, ngành, chương trình đào tạo, lớp, cán bộ, sinh viên.")
+    })
+    {
+        <div class="col-md-6 col-xl-3">
+            <div class="card feature">
+                <div class="stat-icon @tone"><i class="bi @icon"></i></div>
+                <h5>@title</h5>
+                <p>@text</p>
+            </div>
+        </div>
+    }
+</section>
+@if (!authed)
+{
+    @:</div>
+}

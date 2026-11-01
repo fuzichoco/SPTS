@@ -1,0 +1,49 @@
+@model PagedResult<Notification>
+@{ ViewData["Title"] = "Thông báo"; }
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Thông báo</h1>
+        <p class="page-sub">Cập nhật điểm và thông báo từ giáo vụ.</p>
+    </div>
+    <form asp-action="MarkAllRead" method="post"><button class="btn btn-light"><i class="bi bi-check2-all me-1"></i>Đánh dấu đã đọc tất cả</button></form>
+</div>
+@Html.AntiForgeryToken()
+<div class="card">
+    @foreach (var n in Model.Items)
+    {
+        <div class="noti @(n.IsRead ? "" : "unread")" data-id="@n.NotificationId">
+            <div class="noti-icon"><i class="bi @(n.Title.StartsWith("Cập nhật điểm") ? "bi-clipboard-check" : "bi-megaphone")"></i></div>
+            <div class="flex-grow-1">
+                <h6>@n.Title @if (!n.IsRead) { <span class="pill info ms-1">Mới</span> }</h6>
+                <p>@n.Content</p>
+                <small class="text-muted"><i class="bi bi-clock me-1"></i>@n.CreatedAt.ToString("HH:mm dd/MM/yyyy")</small>
+            </div>
+            @if (!n.IsRead)
+            {
+                <button class="btn btn-sm btn-light align-self-center" data-mark-read="@n.NotificationId"><i class="bi bi-check2"></i> Đã đọc</button>
+            }
+        </div>
+    }
+    @if (Model.Items.Count == 0)
+    {
+        <div class="empty"><i class="bi bi-bell-slash"></i>Chưa có thông báo nào.</div>
+    }
+    <div class="card-footer"><partial name="_Pager" model="Model" /></div>
+</div>
+@section Scripts {
+<script>
+    // fetch POST: đánh dấu đã đọc, cập nhật số trên chuông mà không tải lại trang
+    document.querySelectorAll('[data-mark-read]').forEach(btn => btn.addEventListener('click', async () => {
+        const res = await fetch('@Url.Action("MarkRead")/' + btn.dataset.markRead, {
+            method: 'POST', headers: { 'RequestVerificationToken': antiForgeryToken() }
+        });
+        if (!res.ok) return;
+        const { unread } = await res.json();
+        const row = btn.closest('.noti');
+        row.classList.remove('unread');
+        row.querySelector('.pill')?.remove();
+        btn.remove();
+        document.querySelectorAll('[data-unread-badge]').forEach(b => unread ? b.textContent = unread : b.remove());
+    }));
+</script>
+}

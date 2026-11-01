@@ -1,0 +1,77 @@
+@model SPTS.Models.Student
+@{
+    var isNew = Model.StudentId == 0;
+    ViewData["Title"] = isNew ? "Thêm sinh viên" : "Sửa thông tin sinh viên";
+}
+<div class="page-header">
+    <div>
+        <a asp-action="Index" class="back-link"><i class="bi bi-arrow-left"></i>Danh sách sinh viên</a>
+        <h1 class="page-title">@ViewData["Title"]</h1>
+    </div>
+</div>
+<div class="card" style="max-width:860px">
+    <div class="card-body p-4">
+        <form asp-action="Edit" asp-route-id="@(isNew ? null : Model.StudentId)" method="post">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger small"></div>
+            <input type="hidden" asp-for="StudentId" />
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label asp-for="StudentCode" class="form-label">Mã sinh viên</label>
+                    <input asp-for="StudentCode" class="form-control" placeholder="2310004"/>
+                    <span asp-validation-for="StudentCode" class="text-danger"></span>
+                </div>
+                <div class="col-md-8">
+                    <label asp-for="FullName" class="form-label">Họ tên</label>
+                    <input asp-for="FullName" class="form-control" />
+                    <span asp-validation-for="FullName" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="DateOfBirth" class="form-label">Ngày sinh</label>
+                    <input asp-for="DateOfBirth" class="form-control" type="date"/>
+                    <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="Gender" class="form-label">Giới tính</label>
+                    <select asp-for="Gender" class="form-select"><option value="">--</option><option>Nam</option><option>Nữ</option><option>Khác</option></select>
+                    <span asp-validation-for="Gender" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="ClassId" class="form-label">Lớp</label>
+                    <select asp-for="ClassId" asp-items="ViewBag.Classes" class="form-select" ><option value="">-- Chọn --</option></select>
+                    <span asp-validation-for="ClassId" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Email" class="form-label">Email</label>
+                    <input asp-for="Email" class="form-control" type="email"/>
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Phone" class="form-label">Số điện thoại</label>
+                    <input asp-for="Phone" class="form-control" />
+                    <span asp-validation-for="Phone" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Status" class="form-label">Trạng thái</label>
+                    <select asp-for="Status" asp-items="@(new SelectList(SPTS.Areas.Admin.Controllers.StudentsController.Statuses))" class="form-select"></select>
+                    <span asp-validation-for="Status" class="text-danger"></span>
+                </div>
+                @if (isNew)
+                {
+                    <div class="col-md-6 d-flex align-items-end">
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" name="createAccount" value="true" id="createAccount" checked />
+                            <label class="form-check-label" for="createAccount">Tạo tài khoản đăng nhập <span class="code">sv{MSSV}</span> / <span class="code">Student@@123</span></label>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="d-flex gap-2 justify-content-end mt-4 pt-3 border-top">
+                <a asp-action="Index" class="btn btn-light">Hủy</a>
+                <button class="btn btn-primary"><i class="bi bi-check2 me-1"></i>Lưu</button>
+            </div>
+        </form>
+    </div>
+</div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

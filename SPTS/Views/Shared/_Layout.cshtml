@@ -1,72 +1,131 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+@inject SPTS.Data.ApplicationDbContext Db
+@using System.Security.Claims
+@using Microsoft.EntityFrameworkCore
+@{
+    var authed = User.Identity?.IsAuthenticated == true;
+    var area = ViewContext.RouteData.Values["area"]?.ToString() ?? "";
+    var ctrl = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    string Active(string a, string c) => string.Equals(a, area, StringComparison.OrdinalIgnoreCase) && string.Equals(c, ctrl, StringComparison.OrdinalIgnoreCase) ? "active" : "";
+    var isAdmin = User.IsInRole(Role.Admin);
+    var isStaff = User.IsInRole(Role.Staff);
+    var isStudent = User.IsInRole(Role.Student);
+    var unread = 0;
+    if (authed && int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var uid))
+    {
+        unread = await Db.Notifications.CountAsync(n => n.UserId == uid && !n.IsRead);
+    }
+    var fullName = User.FindFirst("FullName")?.Value ?? User.Identity?.Name ?? "";
+    var initials = string.Concat(fullName.Split(' ', StringSplitOptions.RemoveEmptyEntries).TakeLast(2).Select(w => w[0]));
+    var roleLabel = isAdmin ? "Quản trị viên" : isStaff ? "Giáo vụ / Cố vấn" : isStudent ? "Sinh viên" : "";
+}
+<!DOCTYPE html>
+<html lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - SPTS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/SPTS.styles.css" asp-append-version="true" />
 </head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">SPTS</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                        @if (User.IsInRole("Admin"))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Bảng điều khiển</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="Admin" asp-controller="Users" asp-action="Index">Tài khoản</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="Admin" asp-controller="Users" asp-action="Ajax">Tài khoản (AJAX)</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="Admin" asp-controller="AuditLogs" asp-action="Index">Nhật ký</a>
-                            </li>
-                        }
-                    </ul>
-                    @if (User.Identity?.IsAuthenticated == true)
-                    {
-                        <form asp-area="" asp-controller="Account" asp-action="Logout" method="post" class="d-flex align-items-center gap-2">
-                            <span class="text-muted small">Xin chào, <strong>@User.FindFirst("FullName")?.Value</strong></span>
-                            <button class="btn btn-sm btn-outline-secondary">Đăng xuất</button>
+<body class="@(authed ? "app" : "guest")">
+@if (authed)
+{
+    <aside class="sidebar" id="sidebar">
+        <a class="brand" asp-area="" asp-controller="Home" asp-action="Index">
+            <span class="brand-mark"><i class="bi bi-mortarboard-fill"></i></span>
+            <span><strong>SPTS</strong><small>Theo dõi tiến độ học tập</small></span>
+        </a>
+        <nav class="side-nav">
+            @if (isAdmin)
+            {
+                <div class="nav-label">Tổng quan</div>
+                <a class="@Active("Admin","Dashboard")" asp-area="Admin" asp-controller="Dashboard" asp-action="Index"><i class="bi bi-speedometer2"></i>Bảng điều khiển</a>
+                <div class="nav-label">Hệ thống</div>
+                <a class="@Active("Admin","Users")" asp-area="Admin" asp-controller="Users" asp-action="Index"><i class="bi bi-people"></i>Tài khoản</a>
+                <a href="@Url.Action("Ajax", "Users", new { area = "Admin" })"><i class="bi bi-lightning-charge"></i>Tài khoản (AJAX)</a>
+                <a class="@Active("Admin","AuditLogs")" asp-area="Admin" asp-controller="AuditLogs" asp-action="Index"><i class="bi bi-journal-text"></i>Nhật ký hệ thống</a>
+                <div class="nav-label">Danh mục đào tạo</div>
+                <a class="@Active("Admin","Faculties")" asp-area="Admin" asp-controller="Faculties" asp-action="Index"><i class="bi bi-building"></i>Khoa</a>
+                <a class="@Active("Admin","Majors")" asp-area="Admin" asp-controller="Majors" asp-action="Index"><i class="bi bi-diagram-3"></i>Ngành</a>
+                <a class="@Active("Admin","Programs")" asp-area="Admin" asp-controller="Programs" asp-action="Index"><i class="bi bi-map"></i>Chương trình đào tạo</a>
+                <a class="@Active("Admin","Courses")" asp-area="Admin" asp-controller="Courses" asp-action="Index"><i class="bi bi-book"></i>Học phần</a>
+                <a class="@Active("Admin","Classes")" asp-area="Admin" asp-controller="Classes" asp-action="Index"><i class="bi bi-collection"></i>Lớp sinh hoạt</a>
+                <a class="@Active("Admin","StaffMembers")" asp-area="Admin" asp-controller="StaffMembers" asp-action="Index"><i class="bi bi-person-badge"></i>Cán bộ</a>
+                <a class="@Active("Admin","Students")" asp-area="Admin" asp-controller="Students" asp-action="Index"><i class="bi bi-person-vcard"></i>Sinh viên</a>
+            }
+            @if (isAdmin || isStaff)
+            {
+                <div class="nav-label">Học vụ</div>
+                <a class="@Active("Staff","Grades")" asp-area="Staff" asp-controller="Grades" asp-action="Index"><i class="bi bi-pencil-square"></i>Quản lý điểm</a>
+                <a class="@Active("Staff","Semesters")" asp-area="Staff" asp-controller="Semesters" asp-action="Index"><i class="bi bi-calendar3"></i>Học kỳ</a>
+                <a class="@Active("Staff","GradeScales")" asp-area="Staff" asp-controller="GradeScales" asp-action="Index"><i class="bi bi-sliders"></i>Thang điểm</a>
+                <a class="@Active("Staff","Reports")" asp-area="Staff" asp-controller="Reports" asp-action="Index"><i class="bi bi-bar-chart-line"></i>Báo cáo thống kê</a>
+                <a class="@Active("Staff","Announcements")" asp-area="Staff" asp-controller="Announcements" asp-action="Index"><i class="bi bi-megaphone"></i>Gửi thông báo</a>
+            }
+            @if (isStudent)
+            {
+                <div class="nav-label">Học tập</div>
+                <a class="@Active("Student","Progress")" asp-area="Student" asp-controller="Progress" asp-action="Index"><i class="bi bi-graph-up-arrow"></i>Tiến độ học tập</a>
+            }
+            <div class="nav-label">Tiện ích</div>
+            <a class="@Active("Student","Lookup")" asp-area="Student" asp-controller="Lookup" asp-action="Index"><i class="bi bi-search"></i>Tra cứu học phần</a>
+            <a class="@Active("","Notifications")" asp-area="" asp-controller="Notifications" asp-action="Index"><i class="bi bi-bell"></i>Thông báo
+                @if (unread > 0) { <span class="nav-badge" data-unread-badge>@unread</span> }</a>
+        </nav>
+        <div class="side-foot">
+            <i class="bi bi-shield-lock"></i> Phiên đăng nhập hết hạn sau 30 phút không hoạt động
+        </div>
+    </aside>
+    <div class="sidebar-backdrop" data-sidebar-close></div>
+
+    <div class="main">
+        <header class="topbar">
+            <button class="icon-btn d-lg-none" type="button" data-sidebar-toggle aria-label="Mở menu"><i class="bi bi-list"></i></button>
+            <div class="topbar-title">@ViewData["Title"]</div>
+            <div class="topbar-actions">
+                <a class="icon-btn position-relative" asp-area="" asp-controller="Notifications" asp-action="Index" aria-label="Thông báo">
+                    <i class="bi bi-bell"></i>
+                    @if (unread > 0) { <span class="dot-badge" data-unread-badge>@unread</span> }
+                </a>
+                <div class="dropdown">
+                    <button class="user-chip" data-bs-toggle="dropdown" aria-expanded="false">
+                        <span class="avatar">@initials</span>
+                        <span class="d-none d-sm-flex flex-column text-start">
+                            <strong>@fullName</strong><small>@roleLabel</small>
+                        </span>
+                        <i class="bi bi-chevron-down small"></i>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end shadow-sm">
+                        <span class="dropdown-item-text small text-muted">Đăng nhập: @User.Identity?.Name</span>
+                        <div class="dropdown-divider"></div>
+                        <form asp-area="" asp-controller="Account" asp-action="Logout" method="post">
+                            <button class="dropdown-item text-danger"><i class="bi bi-box-arrow-right me-2"></i>Đăng xuất</button>
                         </form>
-                    }
-                    else
-                    {
-                        <a class="btn btn-sm btn-primary" asp-area="" asp-controller="Account" asp-action="Login">Đăng nhập</a>
-                    }
+                    </div>
                 </div>
             </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
+        </header>
+        <main class="content" role="main">
+            @if (TempData["Message"] is string msg)
+            {
+                <div class="alert alert-success alert-dismissible fade show flash"><i class="bi bi-check-circle-fill me-2"></i>@msg<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+            }
+            @if (TempData["Error"] is string err)
+            {
+                <div class="alert alert-danger alert-dismissible fade show flash"><i class="bi bi-exclamation-triangle-fill me-2"></i>@err<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+            }
             @RenderBody()
         </main>
+        <footer class="app-footer">© 2026 SPTS · Hệ thống theo dõi tiến độ học tập sinh viên · Nhóm BTL Web nâng cao</footer>
     </div>
-
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - SPTS - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer>
+}
+else
+{
+    @RenderBody()
+}
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
