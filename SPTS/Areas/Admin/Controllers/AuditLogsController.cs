@@ -15,7 +15,8 @@ namespace SPTS.Areas.Admin.Controllers
         public AuditLogsController(ApplicationDbContext db) => _db = db;
 
         // GET: Admin/AuditLogs?Username=&Action=&TableName=&FromDate=&ToDate=&Page=
-        public async Task<IActionResult> Index(AuditLogFilterViewModel f)
+        // FromQuery: không để route value "action" (= "Index") bind nhầm vào thuộc tính Action của bộ lọc
+        public async Task<IActionResult> Index([FromQuery] AuditLogFilterViewModel f)
         {
             f.Page = Math.Max(1, f.Page);
             f.PageSize = Math.Clamp(f.PageSize, 10, 100);
